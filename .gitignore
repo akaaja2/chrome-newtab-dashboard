@@ -1,0 +1,14 @@
+# Editor and OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Common local logs
+*.log
+
+# Future Node or tooling output
+node_modules/
+dist/
+coverage/

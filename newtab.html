@@ -105,11 +105,28 @@
             </div>
           </div>
 
-          <div class="empty-state-block">
-            <p class="empty-state-title">No tasks yet.</p>
-            <p class="empty-state-text">
-              Add your first task here so you can see the day at a glance.
+          <form class="task-form" id="task-form" novalidate>
+            <label class="field" for="task-input">
+              <span class="field-label">New task</span>
+              <input
+                class="field-input"
+                id="task-input"
+                name="task"
+                type="text"
+                maxlength="140"
+                autocomplete="off"
+                placeholder="Add a task and press Enter"
+                required
+              />
+            </label>
+            <p class="form-message" id="task-message" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="task-results">
+            <p class="empty-state" id="tasks-empty-state">
+              No tasks yet. Add one above to get started.
             </p>
+            <ul class="task-list" id="task-list" aria-label="Saved tasks"></ul>
           </div>
         </article>
 
@@ -123,11 +140,23 @@
             </div>
           </div>
 
-          <div class="empty-state-block">
-            <p class="empty-state-title">Nothing written yet.</p>
-            <p class="empty-state-text">
-              Use this space for reminders, snippets, or anything you want to
-              keep visible.
+          <label class="notes-field" for="notes-input">
+            <span class="field-label">Quick notes</span>
+            <textarea
+              class="notes-input"
+              id="notes-input"
+              name="notes"
+              placeholder="Write a reminder, a rough idea, or anything you want to keep handy."
+              rows="10"
+            ></textarea>
+          </label>
+
+          <div class="notes-footer">
+            <p class="empty-state notes-help">
+              Your note saves automatically as you type.
+            </p>
+            <p class="notes-status" id="notes-status" role="status" aria-live="polite">
+              Not saved yet.
             </p>
           </div>
         </article>
@@ -138,21 +167,124 @@
           <div>
             <h2 id="background-heading">Background Controls</h2>
             <p class="card-subtitle">
-              Placeholder controls for changing the page background.
+              Choose a subtle preset for the full-page background.
             </p>
           </div>
         </div>
 
-        <div class="control-row" aria-label="Background presets">
-          <button class="control-chip" type="button">Neutral</button>
-          <button class="control-chip" type="button">Soft Light</button>
-          <button class="control-chip" type="button">Slate</button>
+        <div class="background-options" role="group" aria-label="Background presets">
+          <button class="background-option is-selected" type="button" data-background-id="linen-gradient" aria-pressed="true">
+            <span class="background-option__swatch background-option__swatch--linen"></span>
+            <span class="background-option__text">
+              <span class="background-option__title">Linen</span>
+              <span class="background-option__subtitle">Warm neutral gradient</span>
+            </span>
+          </button>
+          <button class="background-option" type="button" data-background-id="mist-gradient" aria-pressed="false">
+            <span class="background-option__swatch background-option__swatch--mist"></span>
+            <span class="background-option__text">
+              <span class="background-option__title">Mist</span>
+              <span class="background-option__subtitle">Cool soft gradient</span>
+            </span>
+          </button>
+          <button class="background-option" type="button" data-background-id="slate-gradient" aria-pressed="false">
+            <span class="background-option__swatch background-option__swatch--slate"></span>
+            <span class="background-option__text">
+              <span class="background-option__title">Slate</span>
+              <span class="background-option__subtitle">Deep low-contrast gradient</span>
+            </span>
+          </button>
+          <button class="background-option" type="button" data-background-id="paper-drift" aria-pressed="false">
+            <span class="background-option__swatch background-option__swatch--paper"></span>
+            <span class="background-option__text">
+              <span class="background-option__title">Paper Drift</span>
+              <span class="background-option__subtitle">Local SVG image</span>
+            </span>
+          </button>
+          <button class="background-option" type="button" data-background-id="sky-veil" aria-pressed="false">
+            <span class="background-option__swatch background-option__swatch--sky"></span>
+            <span class="background-option__text">
+              <span class="background-option__title">Sky Veil</span>
+              <span class="background-option__subtitle">Local SVG image</span>
+            </span>
+          </button>
         </div>
 
         <p class="empty-state">
-          These controls are ready for future background options such as
-          colours, gradients, or images.
+          Your chosen background is saved automatically.
         </p>
+        <p class="background-status" id="background-status" role="status" aria-live="polite">
+          Using Linen.
+        </p>
+
+        <div class="custom-background" aria-labelledby="custom-background-heading">
+          <div class="custom-background__header">
+            <div>
+              <h3 id="custom-background-heading" class="custom-background__title">
+                Custom image
+              </h3>
+              <p class="custom-background__subtitle">
+                Upload a small image from your device.
+              </p>
+            </div>
+            <button class="button button--secondary button--compact" id="custom-background-clear" type="button" hidden>
+              Remove image
+            </button>
+            <button class="button button--primary button--compact" id="custom-background-use" type="button" hidden>
+              Use saved image
+            </button>
+          </div>
+
+          <label class="custom-background__field" for="custom-background-input">
+            <span class="field-label">Choose image</span>
+            <input
+              class="field-input"
+              id="custom-background-input"
+              name="custom-background"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml"
+              aria-describedby="custom-background-help custom-background-status"
+            />
+          </label>
+
+          <p class="custom-background__help" id="custom-background-help">
+            Small files work best. Keep the file under 1.5 MB for the smoothest experience.
+          </p>
+          <p class="custom-background__status" id="custom-background-status" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="card settings-card" aria-labelledby="settings-heading">
+        <details class="settings-panel">
+          <summary class="settings-summary">
+            <span>
+              <span class="settings-title" id="settings-heading">Settings</span>
+              <span class="settings-subtitle">Small reset actions for the dashboard.</span>
+            </span>
+            <span class="settings-summary__hint">Open settings</span>
+          </summary>
+
+          <div class="settings-body">
+            <div class="settings-actions" aria-label="Reset dashboard data">
+              <button class="settings-action" type="button" data-reset-action="links">
+                Reset favourite links
+              </button>
+              <button class="settings-action" type="button" data-reset-action="tasks">
+                Reset to-do list
+              </button>
+              <button class="settings-action" type="button" data-reset-action="notes">
+                Clear notes
+              </button>
+              <button class="settings-action" type="button" data-reset-action="background">
+                Reset background
+              </button>
+            </div>
+
+            <p class="settings-status" id="settings-status" role="status" aria-live="polite">
+              No changes yet.
+            </p>
+          </div>
+        </details>
       </section>
     </main>
 
