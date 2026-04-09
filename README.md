@@ -29,7 +29,18 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 chrome-newtab-dashboard/
 |-- manifest.json
 |-- newtab.html
-|-- script.js
+|-- bootstrap.js
+|-- clock.js
+|-- dom.js
+|-- layout.js
+|-- links.js
+|-- notes.js
+|-- backgrounds.js
+|-- pomodoro.js
+|-- settings.js
+|-- shared.js
+|-- state.js
+|-- tasks.js
 |-- styles.css
 |-- README.md
 |-- .gitignore
@@ -42,7 +53,9 @@ chrome-newtab-dashboard/
 - `manifest.json` defines the extension and points Chrome at the custom new tab page.
 - `newtab.html` contains the dashboard markup and semantic layout.
 - `styles.css` handles the visual design, layout, and responsive behavior.
-- `script.js` powers the clock, storage, links, tasks, notes, backgrounds, and settings actions.
+- `bootstrap.js` initializes the dashboard modules in a safe order.
+- `shared.js`, `state.js`, and `dom.js` hold shared constants, state, and DOM references.
+- `layout.js`, `clock.js`, `links.js`, `tasks.js`, `notes.js`, `pomodoro.js`, `backgrounds.js`, and `settings.js` each handle one feature area.
 - `assets/backgrounds/` stores the small local SVG background presets used by the dashboard.
 
 ## Roadmap

@@ -1,0 +1,51 @@
+export const dom = {
+  clockTimeElement: document.getElementById("clock-time"),
+  clockDateElement: document.getElementById("clock-date"),
+
+  pomodoroCardElement: document.querySelector(".pomodoro-card"),
+  pomodoroModeButtons: Array.from(document.querySelectorAll("[data-pomodoro-mode]")),
+  pomodoroCurrentModeElement: document.getElementById("pomodoro-current-mode"),
+  pomodoroRemainingElement: document.getElementById("pomodoro-remaining"),
+  pomodoroSessionLabelElement: document.getElementById("pomodoro-session-label"),
+  pomodoroLabelInput: document.getElementById("pomodoro-label-input"),
+  pomodoroStartButton: document.getElementById("pomodoro-start"),
+  pomodoroPauseButton: document.getElementById("pomodoro-pause"),
+  pomodoroResetButton: document.getElementById("pomodoro-reset"),
+  pomodoroNextBreakElement: document.getElementById("pomodoro-next-break"),
+  pomodoroCompletedCountElement: document.getElementById("pomodoro-completed-count"),
+  pomodoroSessionListElement: document.getElementById("pomodoro-session-list"),
+  pomodoroEmptyStateElement: document.getElementById("pomodoro-empty-state"),
+  pomodoroStatusElement: document.getElementById("pomodoro-status"),
+
+  dashboardLayoutElement: document.querySelector("[data-dashboard-layout]"),
+
+  linksGridElement: document.getElementById("links-grid"),
+  linksEmptyStateElement: document.getElementById("links-empty-state"),
+  linkFormElement: document.getElementById("link-form"),
+  linkTitleInput: document.getElementById("link-title"),
+  linkUrlInput: document.getElementById("link-url"),
+  linkSubmitButton: document.getElementById("link-submit"),
+  linkCancelButton: document.getElementById("link-cancel"),
+  linkMessageElement: document.getElementById("link-message"),
+
+  taskFormElement: document.getElementById("task-form"),
+  taskInputElement: document.getElementById("task-input"),
+  taskMessageElement: document.getElementById("task-message"),
+  taskListElement: document.getElementById("task-list"),
+  tasksEmptyStateElement: document.getElementById("tasks-empty-state"),
+
+  notesInputElement: document.getElementById("notes-input"),
+  notesStatusElement: document.getElementById("notes-status"),
+
+  backgroundOptionButtons: Array.from(document.querySelectorAll("[data-background-id]")),
+  backgroundStatusElement: document.getElementById("background-status"),
+  customBackgroundInputElement: document.getElementById("custom-background-input"),
+  customBackgroundStatusElement: document.getElementById("custom-background-status"),
+  customBackgroundClearButton: document.getElementById("custom-background-clear"),
+  customBackgroundUseButton: document.getElementById("custom-background-use"),
+
+  settingsPanelElement: document.querySelector(".settings-panel"),
+  settingsSummaryHintElement: document.querySelector(".settings-summary__hint"),
+  settingsActionButtons: Array.from(document.querySelectorAll("[data-reset-action]")),
+  settingsStatusElement: document.getElementById("settings-status"),
+};
