@@ -5,6 +5,8 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 ## Features
 
 - Live 24-hour clock and readable date
+- Pomodoro timer with work and break modes
+- Drag a task onto the timer to start a focus session
 - Favourite links with add, edit, and delete actions
 - To-do list with completion and removal controls
 - Quick notes with autosave

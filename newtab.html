@@ -8,31 +8,174 @@
   </head>
   <body>
     <main class="dashboard-shell">
-      <header class="card hero-card" aria-labelledby="clock-heading">
-        <p class="section-kicker">New Tab Dashboard</p>
-        <div class="hero-copy" aria-live="polite" aria-atomic="true">
-          <h1 id="clock-heading" class="hero-time">
-            <span id="clock-time">09:41</span>
-          </h1>
-          <p class="hero-date">
-            <span id="clock-date">Wednesday, 9 April 2026</span>
+      <section class="dashboard-layout" aria-label="Dashboard cards" data-dashboard-layout>
+        <section
+          class="card hero-card dashboard-card dashboard-card--half"
+          id="clock-card"
+          data-dashboard-card-id="clock-card"
+          aria-labelledby="clock-heading"
+        >
+          <div class="card-heading dashboard-card__header">
+            <div>
+              <p class="section-kicker">New Tab Dashboard</p>
+            </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag Clock card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
+          </div>
+          <div class="hero-copy" aria-live="polite" aria-atomic="true">
+            <h1 id="clock-heading" class="hero-time">
+              <span id="clock-time">09:41</span>
+            </h1>
+            <p class="hero-date">
+              <span id="clock-date">Wednesday, 9 April 2026</span>
+            </p>
+          </div>
+          <p class="empty-state hero-state">
+            Your live clock and date appear here. The large header keeps the page
+            easy to scan at a glance, and the values update every second.
           </p>
-        </div>
-        <p class="empty-state hero-state">
-          Your live clock and date appear here. The large header keeps the page
-          easy to scan at a glance, and the values update every second.
-        </p>
-      </header>
+        </section>
 
-      <section class="card links-card" aria-labelledby="links-heading">
-        <div class="card-heading">
+        <article
+          class="card pomodoro-card dashboard-card dashboard-card--half"
+          id="pomodoro-card"
+          aria-labelledby="pomodoro-heading"
+          data-pomodoro-dropzone="true"
+          data-dashboard-card-id="pomodoro-card"
+        >
+          <div class="card-heading dashboard-card__header">
+            <div>
+              <h2 id="pomodoro-heading">Pomodoro</h2>
+              <p class="card-subtitle">
+                Drop a task here or start a focused work session manually.
+              </p>
+            </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag Pomodoro card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
+          </div>
+
+          <div class="pomodoro-modes" role="group" aria-label="Pomodoro modes">
+            <button class="pomodoro-mode-button is-selected" type="button" data-pomodoro-mode="work" aria-pressed="true">
+              Work
+            </button>
+            <button class="pomodoro-mode-button" type="button" data-pomodoro-mode="shortBreak" aria-pressed="false">
+              Short break
+            </button>
+            <button class="pomodoro-mode-button" type="button" data-pomodoro-mode="longBreak" aria-pressed="false">
+              Long break
+            </button>
+          </div>
+
+          <div class="pomodoro-display" aria-live="polite" aria-atomic="true">
+            <p class="pomodoro-display__mode" id="pomodoro-current-mode">
+              Work session
+            </p>
+            <p class="pomodoro-display__time" id="pomodoro-remaining">
+              25:00
+            </p>
+            <p class="pomodoro-display__label" id="pomodoro-session-label">
+              Focus session
+            </p>
+          </div>
+
+          <label class="field pomodoro-label-field" for="pomodoro-label-input">
+            <span class="field-label">Session label</span>
+            <input
+              class="field-input"
+              id="pomodoro-label-input"
+              name="pomodoro-label"
+              type="text"
+              maxlength="80"
+              autocomplete="off"
+              placeholder="Focus session"
+            />
+          </label>
+
+          <div class="pomodoro-controls">
+            <button class="button button--primary" id="pomodoro-start" type="button">
+              Start
+            </button>
+            <button class="button button--secondary" id="pomodoro-pause" type="button">
+              Pause
+            </button>
+            <button class="button button--secondary" id="pomodoro-reset" type="button">
+              Reset
+            </button>
+          </div>
+
+          <div class="pomodoro-meta">
+            <p class="pomodoro-meta__item" id="pomodoro-next-break">
+              Next suggested break: Short break
+            </p>
+            <p class="pomodoro-meta__item" id="pomodoro-completed-count">
+              Completed today: 0
+            </p>
+          </div>
+
+          <p class="pomodoro-status" id="pomodoro-status" role="status" aria-live="polite">
+            Timer is paused.
+          </p>
+
+          <div class="pomodoro-sessions">
+            <div class="card-heading pomodoro-sessions__heading">
+              <div>
+                <h3 class="pomodoro-sessions__title">Today's sessions</h3>
+                <p class="pomodoro-sessions__subtitle">
+                  Only completed work sessions are shown here.
+                </p>
+              </div>
+            </div>
+
+            <p class="empty-state" id="pomodoro-empty-state">
+              No completed work sessions yet today.
+            </p>
+            <ul class="pomodoro-session-list" id="pomodoro-session-list" aria-label="Completed Pomodoro sessions today"></ul>
+          </div>
+        </article>
+
+        <section
+          class="card links-card dashboard-card dashboard-card--full"
+          id="links-card"
+          data-dashboard-card-id="links-card"
+          aria-labelledby="links-heading"
+        >
+          <div class="card-heading dashboard-card__header">
           <div>
             <h2 id="links-heading">Favourite Links</h2>
             <p class="card-subtitle">
               Quick access to the sites you open most often.
             </p>
           </div>
-        </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag Favourite Links card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
+          </div>
 
         <form class="link-form" id="link-form" novalidate>
           <div class="form-grid">
@@ -92,17 +235,32 @@
             aria-label="Saved favourite links"
           ></div>
         </div>
-      </section>
+        </section>
 
-      <section class="dashboard-panels" aria-label="Tasks and notes">
-        <article class="card panel-card" aria-labelledby="todo-heading">
-          <div class="card-heading">
+        <article
+          class="card panel-card dashboard-card dashboard-card--half"
+          id="todo-card"
+          data-dashboard-card-id="todo-card"
+          aria-labelledby="todo-heading"
+        >
+          <div class="card-heading dashboard-card__header">
             <div>
               <h2 id="todo-heading">To-Do List</h2>
               <p class="card-subtitle">
                 Keep a short list of what matters today.
               </p>
             </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag To-Do List card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
           </div>
 
           <form class="task-form" id="task-form" novalidate>
@@ -122,6 +280,10 @@
             <p class="form-message" id="task-message" role="status" aria-live="polite"></p>
           </form>
 
+          <p class="task-hint">
+            Drag a task here to start a focus session.
+          </p>
+
           <div class="task-results">
             <p class="empty-state" id="tasks-empty-state">
               No tasks yet. Add one above to get started.
@@ -130,14 +292,30 @@
           </div>
         </article>
 
-        <article class="card panel-card" aria-labelledby="notes-heading">
-          <div class="card-heading">
+        <article
+          class="card panel-card dashboard-card dashboard-card--half"
+          id="notes-card"
+          data-dashboard-card-id="notes-card"
+          aria-labelledby="notes-heading"
+        >
+          <div class="card-heading dashboard-card__header">
             <div>
               <h2 id="notes-heading">Notes</h2>
               <p class="card-subtitle">
                 Capture quick thoughts before they disappear.
               </p>
             </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag Notes card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
           </div>
 
           <label class="notes-field" for="notes-input">
@@ -160,17 +338,32 @@
             </p>
           </div>
         </article>
-      </section>
 
-      <section class="card background-card" aria-labelledby="background-heading">
-        <div class="card-heading">
+        <section
+          class="card background-card dashboard-card dashboard-card--full"
+          id="background-card"
+          data-dashboard-card-id="background-card"
+          aria-labelledby="background-heading"
+        >
+          <div class="card-heading dashboard-card__header">
           <div>
             <h2 id="background-heading">Background Controls</h2>
             <p class="card-subtitle">
               Choose a subtle preset for the full-page background.
             </p>
           </div>
-        </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag Background Controls card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
+          </div>
 
         <div class="background-options" role="group" aria-label="Background presets">
           <button class="background-option is-selected" type="button" data-background-id="linen-gradient" aria-pressed="true">
@@ -252,14 +445,39 @@
           </p>
           <p class="custom-background__status" id="custom-background-status" role="status" aria-live="polite"></p>
         </div>
-      </section>
+        </section>
 
-      <section class="card settings-card" aria-labelledby="settings-heading">
-        <details class="settings-panel">
+        <section
+          class="card settings-card dashboard-card dashboard-card--full"
+          id="settings-card"
+          data-dashboard-card-id="settings-card"
+          aria-labelledby="settings-heading"
+        >
+          <div class="card-heading dashboard-card__header">
+            <div>
+              <h2 id="settings-heading">Settings</h2>
+              <p class="card-subtitle">
+                Small reset actions for the dashboard.
+              </p>
+            </div>
+            <button
+              class="dashboard-card__drag-handle"
+              type="button"
+              draggable="true"
+              data-dashboard-card-handle
+              aria-label="Drag Settings card"
+              title="Drag to reorder"
+            >
+              <span aria-hidden="true">|||</span>
+              <span>Drag</span>
+            </button>
+          </div>
+
+          <details class="settings-panel">
           <summary class="settings-summary">
             <span>
-              <span class="settings-title" id="settings-heading">Settings</span>
-              <span class="settings-subtitle">Small reset actions for the dashboard.</span>
+              <span class="settings-title">Reset controls</span>
+              <span class="settings-subtitle">Open to reveal the reset actions.</span>
             </span>
             <span class="settings-summary__hint">Open settings</span>
           </summary>
@@ -284,7 +502,8 @@
               No changes yet.
             </p>
           </div>
-        </details>
+          </details>
+        </section>
       </section>
     </main>
 

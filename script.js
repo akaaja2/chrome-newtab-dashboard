@@ -4,6 +4,25 @@
 const clockTimeElement = document.getElementById("clock-time");
 const clockDateElement = document.getElementById("clock-date");
 
+const pomodoroCardElement = document.querySelector(".pomodoro-card");
+const pomodoroModeButtons = Array.from(
+  document.querySelectorAll("[data-pomodoro-mode]"),
+);
+const pomodoroCurrentModeElement = document.getElementById("pomodoro-current-mode");
+const pomodoroRemainingElement = document.getElementById("pomodoro-remaining");
+const pomodoroSessionLabelElement = document.getElementById("pomodoro-session-label");
+const pomodoroLabelInput = document.getElementById("pomodoro-label-input");
+const pomodoroStartButton = document.getElementById("pomodoro-start");
+const pomodoroPauseButton = document.getElementById("pomodoro-pause");
+const pomodoroResetButton = document.getElementById("pomodoro-reset");
+const pomodoroNextBreakElement = document.getElementById("pomodoro-next-break");
+const pomodoroCompletedCountElement = document.getElementById("pomodoro-completed-count");
+const pomodoroSessionListElement = document.getElementById("pomodoro-session-list");
+const pomodoroEmptyStateElement = document.getElementById("pomodoro-empty-state");
+const pomodoroStatusElement = document.getElementById("pomodoro-status");
+
+const dashboardLayoutElement = document.querySelector("[data-dashboard-layout]");
+
 const linksGridElement = document.getElementById("links-grid");
 const linksEmptyStateElement = document.getElementById("links-empty-state");
 const linkFormElement = document.getElementById("link-form");
@@ -46,10 +65,30 @@ const STORAGE_KEYS = {
   tasks: "dashboard.tasks",
   note: "dashboard.note",
   background: "dashboard.background",
+  pomodoro: "dashboard.pomodoro",
+  cardOrder: "dashboard.cardOrder",
 };
 
 const CUSTOM_BACKGROUND_ID = "custom-image";
 const CUSTOM_BACKGROUND_MAX_BYTES = 1500000;
+
+const POMODORO_MODES = {
+  work: {
+    label: "Work session",
+    duration: 25 * 60,
+    fallbackLabel: "Focus session",
+  },
+  shortBreak: {
+    label: "Short break",
+    duration: 5 * 60,
+    fallbackLabel: "Short break",
+  },
+  longBreak: {
+    label: "Long break",
+    duration: 15 * 60,
+    fallbackLabel: "Long break",
+  },
+};
 
 const BACKGROUND_OPTIONS = [
   { id: "linen-gradient", label: "Linen" },
@@ -61,10 +100,26 @@ const BACKGROUND_OPTIONS = [
 
 const DEFAULT_BACKGROUND_ID = BACKGROUND_OPTIONS[0].id;
 
+const DASHBOARD_CARD_ORDER = [
+  "clock-card",
+  "pomodoro-card",
+  "links-card",
+  "todo-card",
+  "notes-card",
+  "background-card",
+  "settings-card",
+];
+
 // =========================
 // In-Memory State
 // =========================
 const state = {
+  ui: {
+    todoListenersBound: false,
+    pomodoroListenersBound: false,
+    pomodoroTickIntervalId: null,
+    dashboardLayoutListenersBound: false,
+  },
   links: {
     items: [],
     editingId: null,
@@ -76,9 +131,26 @@ const state = {
     lastSavedContent: "",
     saveTimer: null,
   },
+  pomodoro: {
+    mode: "work",
+    remainingSeconds: POMODORO_MODES.work.duration,
+    isRunning: false,
+    sessionLabel: "",
+    completedSessions: [],
+    completedWorkCount: 0,
+    lastDateKey: getTodayKey(),
+    dragDepth: 0,
+    isDragOver: false,
+  },
   background: {
     selectedId: DEFAULT_BACKGROUND_ID,
     customImage: null,
+  },
+  layout: {
+    cardOrder: [...DASHBOARD_CARD_ORDER],
+    draggingCardId: null,
+    dropTargetCardId: null,
+    dropPosition: null,
   },
 };
 
@@ -189,6 +261,391 @@ function formatDisplayUrl(url) {
   }
 }
 
+function getTodayKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatDuration(totalSeconds) {
+  const safeSeconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+  const minutes = String(Math.floor(safeSeconds / 60)).padStart(2, "0");
+  const seconds = String(safeSeconds % 60).padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
+}
+
+function startPomodoroTicker() {
+  if (state.ui.pomodoroTickIntervalId !== null) {
+    clearInterval(state.ui.pomodoroTickIntervalId);
+  }
+
+  state.ui.pomodoroTickIntervalId = window.setInterval(tickPomodoroTimer, 1000);
+}
+
+function stopPomodoroTicker() {
+  if (state.ui.pomodoroTickIntervalId === null) {
+    return;
+  }
+
+  clearInterval(state.ui.pomodoroTickIntervalId);
+  state.ui.pomodoroTickIntervalId = null;
+}
+
+// =========================
+// Dashboard Layout
+// =========================
+function getDashboardCardElements() {
+  if (!dashboardLayoutElement) {
+    return [];
+  }
+
+  return Array.from(dashboardLayoutElement.children).filter(
+    (element) =>
+      element instanceof HTMLElement &&
+      typeof element.dataset.dashboardCardId === "string" &&
+      element.dataset.dashboardCardId.length > 0,
+  );
+}
+
+function getAvailableDashboardCardIds() {
+  return getDashboardCardElements()
+    .map((cardElement) => cardElement.dataset.dashboardCardId)
+    .filter((cardId) => typeof cardId === "string" && cardId.length > 0);
+}
+
+// The saved order is built from known card IDs, then any new cards are appended
+// so older saved layouts keep working when the dashboard grows later.
+function normalizeDashboardCardOrder(savedOrder, availableCardIds = getAvailableDashboardCardIds()) {
+  const availableCardSet = new Set(availableCardIds);
+  const seenCardIds = new Set();
+  const normalizedOrder = [];
+  const savedCardIds = Array.isArray(savedOrder) ? savedOrder : [];
+
+  for (const rawCardId of savedCardIds) {
+    const cardId = String(rawCardId || "").trim();
+
+    if (!cardId || seenCardIds.has(cardId) || !availableCardSet.has(cardId)) {
+      continue;
+    }
+
+    seenCardIds.add(cardId);
+    normalizedOrder.push(cardId);
+  }
+
+  for (const cardId of DASHBOARD_CARD_ORDER) {
+    if (availableCardSet.has(cardId) && !seenCardIds.has(cardId)) {
+      seenCardIds.add(cardId);
+      normalizedOrder.push(cardId);
+    }
+  }
+
+  for (const cardId of availableCardIds) {
+    if (!seenCardIds.has(cardId)) {
+      seenCardIds.add(cardId);
+      normalizedOrder.push(cardId);
+    }
+  }
+
+  return normalizedOrder;
+}
+
+function updateDashboardDragClasses() {
+  for (const cardElement of getDashboardCardElements()) {
+    const cardId = cardElement.dataset.dashboardCardId;
+    const isDragging = cardId === state.layout.draggingCardId;
+    const isDropTarget = cardId === state.layout.dropTargetCardId;
+
+    cardElement.classList.toggle("is-dragging", isDragging);
+    cardElement.classList.toggle("is-drop-target", isDropTarget);
+
+    if (isDropTarget && state.layout.dropPosition) {
+      cardElement.dataset.dropPosition = state.layout.dropPosition;
+    } else {
+      cardElement.removeAttribute("data-drop-position");
+    }
+  }
+}
+
+function clearDashboardDragState() {
+  state.layout.draggingCardId = null;
+  state.layout.dropTargetCardId = null;
+  state.layout.dropPosition = null;
+  updateDashboardDragClasses();
+}
+
+function setDashboardDropTarget(cardId, dropPosition) {
+  state.layout.dropTargetCardId = cardId;
+  state.layout.dropPosition = dropPosition;
+  updateDashboardDragClasses();
+}
+
+function getDashboardCardFromPoint(clientX, clientY) {
+  if (!dashboardLayoutElement) {
+    return null;
+  }
+
+  const hitElements = document.elementsFromPoint(clientX, clientY);
+
+  for (const hitElement of hitElements) {
+    if (!(hitElement instanceof Element)) {
+      continue;
+    }
+
+    const cardElement = hitElement.closest("[data-dashboard-card-id]");
+
+    if (cardElement && dashboardLayoutElement.contains(cardElement)) {
+      return cardElement;
+    }
+  }
+
+  let closestCard = null;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  for (const cardElement of getDashboardCardElements()) {
+    const rect = cardElement.getBoundingClientRect();
+    const xDistance =
+      clientX < rect.left ? rect.left - clientX : clientX > rect.right ? clientX - rect.right : 0;
+    const yDistance =
+      clientY < rect.top ? rect.top - clientY : clientY > rect.bottom ? clientY - rect.bottom : 0;
+    const distance = xDistance * xDistance + yDistance * yDistance;
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestCard = cardElement;
+    }
+  }
+
+  return closestCard;
+}
+
+function getDashboardDropPosition(cardElement, clientY) {
+  const rect = cardElement.getBoundingClientRect();
+  const middleY = rect.top + rect.height / 2;
+
+  return clientY < middleY ? "before" : "after";
+}
+
+function reorderDashboardCardOrder(cardOrder, movingCardId, targetCardId, dropPosition) {
+  if (movingCardId === targetCardId) {
+    return cardOrder;
+  }
+
+  const nextOrder = cardOrder.filter((cardId) => cardId !== movingCardId);
+  const targetIndex = nextOrder.indexOf(targetCardId);
+
+  if (targetIndex === -1) {
+    return cardOrder;
+  }
+
+  const insertIndex = dropPosition === "before" ? targetIndex : targetIndex + 1;
+  nextOrder.splice(insertIndex, 0, movingCardId);
+
+  return nextOrder;
+}
+
+function haveSameCardOrder(firstOrder, secondOrder) {
+  if (firstOrder === secondOrder) {
+    return true;
+  }
+
+  if (!Array.isArray(firstOrder) || !Array.isArray(secondOrder)) {
+    return false;
+  }
+
+  if (firstOrder.length !== secondOrder.length) {
+    return false;
+  }
+
+  for (let index = 0; index < firstOrder.length; index += 1) {
+    if (firstOrder[index] !== secondOrder[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function renderDashboardLayout() {
+  if (!dashboardLayoutElement) {
+    return;
+  }
+
+  const availableCards = new Map(
+    getDashboardCardElements().map((cardElement) => [
+      cardElement.dataset.dashboardCardId,
+      cardElement,
+    ]),
+  );
+  const nextOrder = normalizeDashboardCardOrder(state.layout.cardOrder, Array.from(availableCards.keys()));
+  const fragment = document.createDocumentFragment();
+
+  state.layout.cardOrder = nextOrder;
+
+  for (const cardId of nextOrder) {
+    const cardElement = availableCards.get(cardId);
+
+    if (cardElement) {
+      fragment.appendChild(cardElement);
+    }
+  }
+
+  dashboardLayoutElement.appendChild(fragment);
+  updateDashboardDragClasses();
+}
+
+async function persistDashboardLayout() {
+  return writeStoredValue(STORAGE_KEYS.cardOrder, state.layout.cardOrder);
+}
+
+// Restoring the layout is just moving existing cards into the saved ID order.
+async function loadSavedDashboardLayout() {
+  if (!dashboardLayoutElement) {
+    return;
+  }
+
+  const savedCardOrder = await readStoredValue(STORAGE_KEYS.cardOrder, []);
+  state.layout.cardOrder = normalizeDashboardCardOrder(savedCardOrder);
+  renderDashboardLayout();
+  await persistDashboardLayout();
+}
+
+// Drag start begins from the handle so inner controls stay clickable and safe.
+function handleDashboardDragStart(event) {
+  if (!dashboardLayoutElement) {
+    return;
+  }
+
+  const handleElement = event.target.closest("[data-dashboard-card-handle]");
+
+  if (!handleElement || !dashboardLayoutElement.contains(handleElement)) {
+    return;
+  }
+
+  const cardElement = handleElement.closest("[data-dashboard-card-id]");
+
+  if (!cardElement || !event.dataTransfer) {
+    return;
+  }
+
+  const cardId = cardElement.dataset.dashboardCardId;
+
+  if (!cardId) {
+    return;
+  }
+
+  state.layout.draggingCardId = cardId;
+  state.layout.dropTargetCardId = null;
+  state.layout.dropPosition = null;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("application/x-newtab-card-order", cardId);
+  event.dataTransfer.setData("text/plain", cardId);
+
+  updateDashboardDragClasses();
+}
+
+// Drag over works by finding the nearest card and deciding whether the drop
+// should land before or after that card based on the pointer position.
+function handleDashboardDragOver(event) {
+  if (!dashboardLayoutElement || !state.layout.draggingCardId || !event.dataTransfer) {
+    return;
+  }
+
+  const dragTypes = Array.from(event.dataTransfer.types || []);
+
+  if (!dragTypes.includes("application/x-newtab-card-order") && !dragTypes.includes("text/plain")) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const targetCard = getDashboardCardFromPoint(event.clientX, event.clientY);
+
+  if (!targetCard) {
+    state.layout.dropTargetCardId = null;
+    state.layout.dropPosition = null;
+    updateDashboardDragClasses();
+    return;
+  }
+
+  const targetCardId = targetCard.dataset.dashboardCardId;
+
+  if (!targetCardId) {
+    return;
+  }
+
+  const dropPosition = getDashboardDropPosition(targetCard, event.clientY);
+  event.dataTransfer.dropEffect = "move";
+
+  if (
+    state.layout.dropTargetCardId === targetCardId &&
+    state.layout.dropPosition === dropPosition
+  ) {
+    return;
+  }
+
+  setDashboardDropTarget(targetCardId, dropPosition);
+  event.dataTransfer.dropEffect = "move";
+}
+
+// Drop converts the dragged card ID back into a saved order array and then
+// re-renders the layout from that array so the DOM and storage stay in sync.
+async function handleDashboardDrop(event) {
+  event.preventDefault();
+
+  const movingCardId = state.layout.draggingCardId;
+  const targetCard = getDashboardCardFromPoint(event.clientX, event.clientY);
+  const targetCardId = targetCard ? targetCard.dataset.dashboardCardId || "" : "";
+  const dropPosition = targetCard ? getDashboardDropPosition(targetCard, event.clientY) : "after";
+
+  clearDashboardDragState();
+
+  if (!movingCardId || !targetCardId) {
+    return;
+  }
+
+  const nextOrder = reorderDashboardCardOrder(
+    state.layout.cardOrder,
+    movingCardId,
+    targetCardId,
+    dropPosition,
+  );
+
+  if (haveSameCardOrder(nextOrder, state.layout.cardOrder)) {
+    return;
+  }
+
+  state.layout.cardOrder = nextOrder;
+  renderDashboardLayout();
+  await persistDashboardLayout();
+}
+
+function handleDashboardDragEnd() {
+  clearDashboardDragState();
+}
+
+async function initDashboardLayout() {
+  if (!dashboardLayoutElement) {
+    return;
+  }
+
+  await loadSavedDashboardLayout();
+
+  if (state.ui.dashboardLayoutListenersBound) {
+    return;
+  }
+
+  dashboardLayoutElement.addEventListener("dragstart", handleDashboardDragStart);
+  dashboardLayoutElement.addEventListener("dragover", handleDashboardDragOver);
+  dashboardLayoutElement.addEventListener("drop", (event) => {
+    void handleDashboardDrop(event);
+  });
+  dashboardLayoutElement.addEventListener("dragend", handleDashboardDragEnd);
+  state.ui.dashboardLayoutListenersBound = true;
+}
+
 // =========================
 // Clock
 // =========================
@@ -218,6 +675,7 @@ function renderClock() {
 
   clockTimeElement.textContent = time;
   clockDateElement.textContent = dateText;
+  void maybeResetPomodoroForNewDay();
 }
 
 // =========================
@@ -541,6 +999,8 @@ function renderTasks() {
     const item = document.createElement("li");
     item.className = task.completed ? "task-item is-complete" : "task-item";
     item.dataset.taskId = task.id;
+    item.draggable = true;
+    item.setAttribute("aria-grabbed", "false");
 
     item.innerHTML = `
       <div class="task-item__main">
@@ -563,6 +1023,67 @@ function renderTasks() {
 
     taskListElement.appendChild(item);
   }
+}
+
+function getTaskFromDragData(dataTransfer) {
+  if (!dataTransfer) {
+    return null;
+  }
+
+  const rawPayload =
+    dataTransfer.getData("application/x-newtab-task") || dataTransfer.getData("text/plain");
+
+  if (!rawPayload) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawPayload);
+
+    if (parsed && typeof parsed.text === "string") {
+      return String(parsed.text).trim() || null;
+    }
+  } catch {
+    // Fall back to plain text if the custom payload is not JSON.
+  }
+
+  return String(rawPayload).trim() || null;
+}
+
+// Each task is draggable so the user can launch it directly from the to-do list.
+function handleTaskListDragStart(event) {
+  const taskItem = event.target.closest("[data-task-id]");
+
+  if (!taskItem || event.target.closest("[data-task-action]")) {
+    return;
+  }
+
+  const task = state.tasks.items.find((item) => item.id === taskItem.dataset.taskId);
+
+  if (!task || !event.dataTransfer) {
+    return;
+  }
+
+  event.dataTransfer.effectAllowed = "copy";
+  event.dataTransfer.setData(
+    "application/x-newtab-task",
+    JSON.stringify({ id: task.id, text: task.text }),
+  );
+  event.dataTransfer.setData("text/plain", task.text);
+
+  taskItem.classList.add("is-dragging");
+  taskItem.setAttribute("aria-grabbed", "true");
+}
+
+function handleTaskListDragEnd(event) {
+  const taskItem = event.target.closest("[data-task-id]");
+
+  if (!taskItem) {
+    return;
+  }
+
+  taskItem.classList.remove("is-dragging");
+  taskItem.setAttribute("aria-grabbed", "false");
 }
 
 async function handleTaskFormSubmit(event) {
@@ -653,9 +1174,14 @@ async function initTodoList() {
   await loadSavedTasks();
   renderTasks();
 
-  taskFormElement.addEventListener("submit", handleTaskFormSubmit);
-  taskListElement.addEventListener("change", handleTaskListChange);
-  taskListElement.addEventListener("click", handleTaskListClick);
+  if (!state.ui.todoListenersBound) {
+    taskFormElement.addEventListener("submit", handleTaskFormSubmit);
+    taskListElement.addEventListener("change", handleTaskListChange);
+    taskListElement.addEventListener("click", handleTaskListClick);
+    taskListElement.addEventListener("dragstart", handleTaskListDragStart);
+    taskListElement.addEventListener("dragend", handleTaskListDragEnd);
+    state.ui.todoListenersBound = true;
+  }
 }
 
 // =========================
@@ -758,6 +1284,581 @@ async function initNotes() {
   notesInputElement.addEventListener("input", handleNotesInput);
   notesInputElement.addEventListener("blur", handleNotesBlur);
   window.addEventListener("beforeunload", flushNoteAutosave);
+}
+
+// =========================
+// Pomodoro Timer
+// =========================
+function setPomodoroStatus(message, type = "idle") {
+  setStatus(pomodoroStatusElement, message, type);
+}
+
+function getPomodoroModeDefinition(mode) {
+  return POMODORO_MODES[mode] || POMODORO_MODES.work;
+}
+
+function normalizePomodoroMode(mode) {
+  return POMODORO_MODES[mode] ? mode : "work";
+}
+
+function getPomodoroModeLabel(mode) {
+  return getPomodoroModeDefinition(mode).label;
+}
+
+function getPomodoroModeDuration(mode) {
+  return getPomodoroModeDefinition(mode).duration;
+}
+
+function getPomodoroFallbackLabel(mode) {
+  return getPomodoroModeDefinition(mode).fallbackLabel;
+}
+
+function sanitizePomodoroLabel(value) {
+  return String(value || "").trim();
+}
+
+function getPomodoroDisplayLabel() {
+  const label = sanitizePomodoroLabel(state.pomodoro.sessionLabel);
+  return label || getPomodoroFallbackLabel(state.pomodoro.mode);
+}
+
+function getBreakModeForCompletedCount(completedCount) {
+  return completedCount % 4 === 0 ? "longBreak" : "shortBreak";
+}
+
+function getUpcomingBreakMode() {
+  return getBreakModeForCompletedCount(state.pomodoro.completedWorkCount + 1);
+}
+
+function getUpcomingBreakLabel() {
+  return getPomodoroModeLabel(getUpcomingBreakMode());
+}
+
+function formatPomodoroCompletionTime(date = new Date()) {
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function normalizePomodoroSessions(sessions) {
+  if (!Array.isArray(sessions)) {
+    return [];
+  }
+
+  return sessions
+    .map((session) => {
+      if (!session || typeof session !== "object") {
+        return null;
+      }
+
+      const label = sanitizePomodoroLabel(session.label) || getPomodoroFallbackLabel("work");
+      const completedAt = sanitizePomodoroLabel(session.completedAt || session.time);
+
+      if (!completedAt) {
+        return null;
+      }
+
+      return {
+        label,
+        completedAt,
+      };
+    })
+    .filter(Boolean);
+}
+
+function resetPomodoroHistoryForToday() {
+  const todayKey = getTodayKey();
+
+  if (state.pomodoro.lastDateKey === todayKey) {
+    return false;
+  }
+
+  state.pomodoro.completedSessions = [];
+  state.pomodoro.completedWorkCount = 0;
+  state.pomodoro.lastDateKey = todayKey;
+
+  return true;
+}
+
+// If the calendar day changes, clear today's session history and save the reset state.
+async function maybeResetPomodoroForNewDay() {
+  if (!resetPomodoroHistoryForToday()) {
+    return false;
+  }
+
+  renderPomodoro();
+  const saved = await persistPomodoro();
+
+  setPomodoroStatus(
+    saved
+      ? "Today's Pomodoro history was reset for the new day."
+      : "Today's Pomodoro history reset locally.",
+    saved ? "saved" : "error",
+  );
+
+  return true;
+}
+
+async function loadSavedPomodoro() {
+  if (!pomodoroStatusElement) {
+    return;
+  }
+
+  const fallbackState = {
+    mode: "work",
+    remainingSeconds: POMODORO_MODES.work.duration,
+    isRunning: false,
+    sessionLabel: "",
+    completedSessions: [],
+    completedWorkCount: 0,
+    lastDateKey: getTodayKey(),
+  };
+  const savedPomodoro = await readStoredValue(STORAGE_KEYS.pomodoro, fallbackState);
+  const storedObject =
+    savedPomodoro && typeof savedPomodoro === "object" ? savedPomodoro : fallbackState;
+  const normalizedMode = normalizePomodoroMode(storedObject.mode);
+  const modeDuration = getPomodoroModeDuration(normalizedMode);
+  const storedRemainingSeconds = Number(storedObject.remainingSeconds);
+  const storedCompletedWorkCount = Number(storedObject.completedWorkCount);
+
+  state.pomodoro.mode = normalizedMode;
+  state.pomodoro.remainingSeconds = Number.isFinite(storedRemainingSeconds)
+    ? Math.min(modeDuration, Math.max(0, Math.floor(storedRemainingSeconds)))
+    : modeDuration;
+  state.pomodoro.isRunning = Boolean(storedObject.isRunning);
+  state.pomodoro.sessionLabel = String(storedObject.sessionLabel || "");
+  state.pomodoro.completedSessions = normalizePomodoroSessions(storedObject.completedSessions);
+  state.pomodoro.completedWorkCount = Number.isFinite(storedCompletedWorkCount)
+    ? Math.max(0, Math.floor(storedCompletedWorkCount))
+    : 0;
+  state.pomodoro.lastDateKey =
+    typeof storedObject.lastDateKey === "string" && storedObject.lastDateKey
+      ? storedObject.lastDateKey
+      : getTodayKey();
+  state.pomodoro.dragDepth = 0;
+  state.pomodoro.isDragOver = false;
+
+  // If the stored date is from a previous day, clear the old history now.
+  resetPomodoroHistoryForToday();
+
+  const wasRunningBeforeReload = state.pomodoro.isRunning;
+
+  // Restoring a running timer across reloads is fragile, so we reopen it paused.
+  if (wasRunningBeforeReload) {
+    state.pomodoro.isRunning = false;
+  }
+
+  renderPomodoro();
+  await persistPomodoro();
+
+  if (wasRunningBeforeReload) {
+    setPomodoroStatus("Restored as paused after reload.", "saved");
+  } else if (!storageArea) {
+    setPomodoroStatus("Timer state will reset after reload.", "error");
+  }
+}
+
+async function persistPomodoro() {
+  return writeStoredValue(STORAGE_KEYS.pomodoro, {
+    mode: state.pomodoro.mode,
+    remainingSeconds: state.pomodoro.remainingSeconds,
+    isRunning: state.pomodoro.isRunning,
+    sessionLabel: sanitizePomodoroLabel(state.pomodoro.sessionLabel),
+    completedSessions: state.pomodoro.completedSessions,
+    completedWorkCount: state.pomodoro.completedWorkCount,
+    lastDateKey: state.pomodoro.lastDateKey,
+  });
+}
+
+function renderPomodoroSessions() {
+  if (!pomodoroSessionListElement || !pomodoroEmptyStateElement) {
+    return;
+  }
+
+  pomodoroSessionListElement.innerHTML = "";
+
+  if (state.pomodoro.completedSessions.length === 0) {
+    pomodoroEmptyStateElement.hidden = false;
+    return;
+  }
+
+  pomodoroEmptyStateElement.hidden = true;
+
+  for (const session of state.pomodoro.completedSessions) {
+    const item = document.createElement("li");
+    item.className = "pomodoro-session-item";
+    item.innerHTML = `
+      <p class="pomodoro-session-item__label">${escapeHtml(session.label)}</p>
+      <p class="pomodoro-session-item__time">${escapeHtml(session.completedAt)}</p>
+    `;
+    pomodoroSessionListElement.appendChild(item);
+  }
+}
+
+// Keep the mode buttons in sync with the current timer mode.
+function renderPomodoroModeButtons() {
+  for (const button of pomodoroModeButtons) {
+    const isSelected = button.dataset.pomodoroMode === state.pomodoro.mode;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  }
+}
+
+function renderPomodoro() {
+  if (
+    !pomodoroCurrentModeElement ||
+    !pomodoroRemainingElement ||
+    !pomodoroSessionLabelElement ||
+    !pomodoroLabelInput
+  ) {
+    return;
+  }
+
+  const modeDefinition = getPomodoroModeDefinition(state.pomodoro.mode);
+
+  if (pomodoroCardElement) {
+    pomodoroCardElement.classList.toggle("is-running", state.pomodoro.isRunning);
+    pomodoroCardElement.classList.toggle("is-drag-over", state.pomodoro.isDragOver);
+    pomodoroCardElement.dataset.state = state.pomodoro.isRunning ? "running" : "paused";
+  }
+
+  renderPomodoroModeButtons();
+
+  pomodoroCurrentModeElement.textContent = modeDefinition.label;
+  pomodoroRemainingElement.textContent = formatDuration(state.pomodoro.remainingSeconds);
+  pomodoroSessionLabelElement.textContent = getPomodoroDisplayLabel();
+  pomodoroLabelInput.placeholder = modeDefinition.fallbackLabel;
+
+  if (pomodoroLabelInput.value !== state.pomodoro.sessionLabel) {
+    pomodoroLabelInput.value = state.pomodoro.sessionLabel;
+  }
+
+  if (pomodoroStartButton) {
+    pomodoroStartButton.disabled = state.pomodoro.isRunning;
+    pomodoroStartButton.setAttribute("aria-busy", String(state.pomodoro.isRunning));
+    pomodoroStartButton.textContent = state.pomodoro.isRunning ? "Running" : "Start";
+  }
+
+  if (pomodoroPauseButton) {
+    pomodoroPauseButton.disabled = !state.pomodoro.isRunning;
+    pomodoroPauseButton.textContent = state.pomodoro.isRunning ? "Pause" : "Paused";
+  }
+
+  if (pomodoroResetButton) {
+    pomodoroResetButton.disabled = false;
+  }
+
+  if (pomodoroNextBreakElement) {
+    pomodoroNextBreakElement.textContent = `Next suggested break: ${getUpcomingBreakLabel()}`;
+  }
+
+  if (pomodoroCompletedCountElement) {
+    pomodoroCompletedCountElement.textContent = `Completed today: ${state.pomodoro.completedWorkCount}`;
+  }
+
+  renderPomodoroSessions();
+
+  if (state.pomodoro.isDragOver) {
+    setPomodoroStatus("Drop a task here to start a work session.", "saved");
+  } else if (state.pomodoro.isRunning) {
+    setPomodoroStatus(`Running ${modeDefinition.label}.`, "saved");
+  } else {
+    setPomodoroStatus(`Paused on ${modeDefinition.label}.`, "idle");
+  }
+}
+
+async function setPomodoroMode(mode, options = {}) {
+  const nextMode = normalizePomodoroMode(mode);
+  const shouldClearLabel = Boolean(options.clearLabel);
+  const wasRunning = state.pomodoro.isRunning;
+
+  state.pomodoro.mode = nextMode;
+  state.pomodoro.remainingSeconds = getPomodoroModeDuration(nextMode);
+  state.pomodoro.isRunning = false;
+
+  if (shouldClearLabel) {
+    state.pomodoro.sessionLabel = "";
+  }
+
+  renderPomodoro();
+  const saved = await persistPomodoro();
+
+  setPomodoroStatus(
+    saved
+      ? `Switched to ${getPomodoroModeLabel(nextMode)}${wasRunning ? " and paused." : "."}`
+      : `Switched to ${getPomodoroModeLabel(nextMode)}${wasRunning ? " and paused locally." : ". Changes won't persist."}`,
+    saved ? "saved" : "error",
+  );
+}
+
+async function handlePomodoroModeClick(event) {
+  const button = event.target.closest("[data-pomodoro-mode]");
+
+  if (!button) {
+    return;
+  }
+
+  await setPomodoroMode(button.dataset.pomodoroMode);
+}
+
+async function handlePomodoroStart() {
+  if (state.pomodoro.isRunning) {
+    return;
+  }
+
+  const currentLabel = pomodoroLabelInput ? pomodoroLabelInput.value : state.pomodoro.sessionLabel;
+  const cleanedLabel = sanitizePomodoroLabel(currentLabel);
+
+  state.pomodoro.sessionLabel = cleanedLabel;
+
+  if (state.pomodoro.remainingSeconds <= 0) {
+    state.pomodoro.remainingSeconds = getPomodoroModeDuration(state.pomodoro.mode);
+  }
+
+  state.pomodoro.isRunning = true;
+  renderPomodoro();
+
+  const saved = await persistPomodoro();
+  setPomodoroStatus(
+    saved
+      ? `Running ${getPomodoroModeLabel(state.pomodoro.mode)}.`
+      : `Running ${getPomodoroModeLabel(state.pomodoro.mode)} locally only.`,
+    saved ? "saved" : "error",
+  );
+}
+
+async function handlePomodoroPause() {
+  if (!state.pomodoro.isRunning) {
+    return;
+  }
+
+  state.pomodoro.isRunning = false;
+  renderPomodoro();
+
+  const saved = await persistPomodoro();
+  setPomodoroStatus(
+    saved
+      ? `Paused on ${getPomodoroModeLabel(state.pomodoro.mode)}.`
+      : `Paused on ${getPomodoroModeLabel(state.pomodoro.mode)} locally only.`,
+    saved ? "saved" : "error",
+  );
+}
+
+async function handlePomodoroReset() {
+  state.pomodoro.remainingSeconds = getPomodoroModeDuration(state.pomodoro.mode);
+  state.pomodoro.isRunning = false;
+  renderPomodoro();
+
+  const saved = await persistPomodoro();
+  setPomodoroStatus(
+    saved
+      ? `${getPomodoroModeLabel(state.pomodoro.mode)} reset to ${formatDuration(state.pomodoro.remainingSeconds)}.`
+      : `${getPomodoroModeLabel(state.pomodoro.mode)} reset locally only.`,
+    saved ? "saved" : "error",
+  );
+}
+
+function handlePomodoroLabelInput() {
+  state.pomodoro.sessionLabel = pomodoroLabelInput ? pomodoroLabelInput.value : "";
+  renderPomodoro();
+  void persistPomodoro();
+}
+
+async function completePomodoroSession() {
+  const completedMode = state.pomodoro.mode;
+  const completedLabel = getPomodoroDisplayLabel();
+
+  // When a work session ends, log it, pick the next break, and pause so the user can decide what to do next.
+  if (completedMode === "work") {
+    state.pomodoro.completedSessions = [
+      {
+        label: completedLabel,
+        completedAt: formatPomodoroCompletionTime(),
+      },
+      ...state.pomodoro.completedSessions,
+    ];
+    state.pomodoro.completedWorkCount += 1;
+  }
+
+  const nextMode =
+    completedMode === "work"
+      ? getBreakModeForCompletedCount(state.pomodoro.completedWorkCount)
+      : "work";
+
+  state.pomodoro.mode = nextMode;
+  state.pomodoro.remainingSeconds = getPomodoroModeDuration(nextMode);
+  state.pomodoro.isRunning = false;
+  state.pomodoro.sessionLabel = "";
+  state.pomodoro.isDragOver = false;
+  state.pomodoro.dragDepth = 0;
+
+  renderPomodoro();
+  const saved = await persistPomodoro();
+
+  if (completedMode === "work") {
+    setPomodoroStatus(
+      saved
+        ? `Work session complete. Next suggested break: ${getPomodoroModeLabel(nextMode)}.`
+        : `Work session complete. Next suggested break: ${getPomodoroModeLabel(nextMode)} locally only.`,
+      saved ? "saved" : "error",
+    );
+  } else {
+    setPomodoroStatus(
+      saved
+        ? "Break complete. Ready for the next work session."
+        : "Break complete locally only.",
+      saved ? "saved" : "error",
+    );
+  }
+}
+
+// The countdown runs once per second while the timer is active.
+function tickPomodoroTimer() {
+  if (state.pomodoro.isRunning) {
+    if (state.pomodoro.remainingSeconds <= 0) {
+      void completePomodoroSession();
+      return;
+    }
+
+    state.pomodoro.remainingSeconds -= 1;
+    renderPomodoro();
+    void persistPomodoro();
+    return;
+  }
+
+  if (state.pomodoro.lastDateKey !== getTodayKey()) {
+    void maybeResetPomodoroForNewDay();
+  }
+}
+
+async function startPomodoroFromTask(taskText) {
+  const label = sanitizePomodoroLabel(taskText);
+
+  if (!label) {
+    return;
+  }
+
+  state.pomodoro.mode = "work";
+  state.pomodoro.remainingSeconds = POMODORO_MODES.work.duration;
+  state.pomodoro.sessionLabel = label;
+  state.pomodoro.isRunning = true;
+  state.pomodoro.isDragOver = false;
+  state.pomodoro.dragDepth = 0;
+
+  renderPomodoro();
+  const saved = await persistPomodoro();
+
+  setPomodoroStatus(
+    saved
+      ? `Started work session for ${label}.`
+      : `Started work session for ${label} locally only.`,
+    saved ? "saved" : "error",
+  );
+}
+
+function clearPomodoroDragState() {
+  state.pomodoro.isDragOver = false;
+  state.pomodoro.dragDepth = 0;
+  renderPomodoro();
+}
+
+// Drag-and-drop uses the task text as a quick way to launch a focused work session.
+function handlePomodoroDragEnter(event) {
+  if (!event.dataTransfer || !pomodoroCardElement) {
+    return;
+  }
+
+  const hasTextPayload =
+    Array.from(event.dataTransfer.types || []).includes("text/plain") ||
+    Array.from(event.dataTransfer.types || []).includes("application/x-newtab-task");
+
+  if (!hasTextPayload) {
+    return;
+  }
+
+  state.pomodoro.dragDepth += 1;
+
+  if (state.pomodoro.dragDepth === 1) {
+    state.pomodoro.isDragOver = true;
+    renderPomodoro();
+  }
+}
+
+function handlePomodoroDragOver(event) {
+  if (!pomodoroCardElement) {
+    return;
+  }
+
+  event.preventDefault();
+
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "copy";
+  }
+}
+
+function handlePomodoroDragLeave() {
+  if (state.pomodoro.dragDepth > 0) {
+    state.pomodoro.dragDepth -= 1;
+  }
+
+  if (state.pomodoro.dragDepth <= 0) {
+    clearPomodoroDragState();
+  }
+}
+
+function handlePomodoroDrop(event) {
+  event.preventDefault();
+
+  const taskText = getTaskFromDragData(event.dataTransfer);
+
+  clearPomodoroDragState();
+
+  if (!taskText) {
+    return;
+  }
+
+  void startPomodoroFromTask(taskText);
+}
+
+async function initPomodoro() {
+  if (
+    !pomodoroCardElement ||
+    !pomodoroCurrentModeElement ||
+    !pomodoroRemainingElement ||
+    !pomodoroSessionLabelElement ||
+    !pomodoroLabelInput ||
+    !pomodoroStartButton ||
+    !pomodoroPauseButton ||
+    !pomodoroResetButton
+  ) {
+    return;
+  }
+
+  await loadSavedPomodoro();
+
+  if (!state.ui.pomodoroListenersBound) {
+    for (const button of pomodoroModeButtons) {
+      button.addEventListener("click", handlePomodoroModeClick);
+    }
+
+    pomodoroStartButton.addEventListener("click", () => {
+      void handlePomodoroStart();
+    });
+    pomodoroPauseButton.addEventListener("click", () => {
+      void handlePomodoroPause();
+    });
+    pomodoroResetButton.addEventListener("click", () => {
+      void handlePomodoroReset();
+    });
+    pomodoroLabelInput.addEventListener("input", handlePomodoroLabelInput);
+    pomodoroCardElement.addEventListener("dragenter", handlePomodoroDragEnter);
+    pomodoroCardElement.addEventListener("dragover", handlePomodoroDragOver);
+    pomodoroCardElement.addEventListener("dragleave", handlePomodoroDragLeave);
+    pomodoroCardElement.addEventListener("drop", handlePomodoroDrop);
+    state.ui.pomodoroListenersBound = true;
+  }
 }
 
 // =========================
@@ -1225,9 +2326,13 @@ function initSettings() {
 // =========================
 renderClock();
 setInterval(renderClock, 1000);
+startPomodoroTicker();
+window.addEventListener("beforeunload", stopPomodoroTicker);
 
+void initDashboardLayout();
 void initFavouriteLinks();
 void initTodoList();
 void initNotes();
+void initPomodoro();
 void initBackgrounds();
 initSettings();
