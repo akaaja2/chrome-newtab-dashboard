@@ -25,9 +25,11 @@ export const state = {
   },
   pomodoro: {
     mode: "work",
+    durationSeconds: POMODORO_MODES.work.duration,
     remainingSeconds: POMODORO_MODES.work.duration,
+    startedAtMs: null,
     isRunning: false,
-    sessionLabel: "",
+    currentLabel: "",
     completedSessions: [],
     completedWorkCount: 0,
     lastDateKey: getTodayKey(),
