@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Tab Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <header class="card hero-card" aria-labelledby="clock-heading">
+        <p class="section-kicker">New Tab Dashboard</p>
+        <div class="hero-copy" aria-live="polite" aria-atomic="true">
+          <h1 id="clock-heading" class="hero-time">
+            <span id="clock-time">09:41</span>
+          </h1>
+          <p class="hero-date">
+            <span id="clock-date">Wednesday, 9 April 2026</span>
+          </p>
+        </div>
+        <p class="empty-state hero-state">
+          Your live clock and date appear here. The large header keeps the page
+          easy to scan at a glance, and the values update every second.
+        </p>
+      </header>
+
+      <section class="card links-card" aria-labelledby="links-heading">
+        <div class="card-heading">
+          <div>
+            <h2 id="links-heading">Favourite Links</h2>
+            <p class="card-subtitle">
+              Quick access to the sites you open most often.
+            </p>
+          </div>
+        </div>
+
+        <form class="link-form" id="link-form" novalidate>
+          <div class="form-grid">
+            <label class="field" for="link-title">
+              <span class="field-label">Title</span>
+              <input
+                class="field-input"
+                id="link-title"
+                name="title"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+                placeholder="e.g. Gmail"
+                required
+              />
+            </label>
+
+            <label class="field" for="link-url">
+              <span class="field-label">URL</span>
+              <input
+                class="field-input"
+                id="link-url"
+                name="url"
+                type="url"
+                inputmode="url"
+                autocomplete="off"
+                placeholder="https://example.com"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button class="button button--primary" id="link-submit" type="submit">
+              Add link
+            </button>
+            <button
+              class="button button--secondary"
+              id="link-cancel"
+              type="button"
+              hidden
+            >
+              Cancel edit
+            </button>
+            <p class="form-message" id="link-message" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <div class="link-results">
+          <p class="empty-state" id="links-empty-state">
+            No saved links yet. Add your first favourite link using the form
+            above.
+          </p>
+          <div
+            class="link-grid"
+            id="links-grid"
+            aria-label="Saved favourite links"
+          ></div>
+        </div>
+      </section>
+
+      <section class="dashboard-panels" aria-label="Tasks and notes">
+        <article class="card panel-card" aria-labelledby="todo-heading">
+          <div class="card-heading">
+            <div>
+              <h2 id="todo-heading">To-Do List</h2>
+              <p class="card-subtitle">
+                Keep a short list of what matters today.
+              </p>
+            </div>
+          </div>
+
+          <div class="empty-state-block">
+            <p class="empty-state-title">No tasks yet.</p>
+            <p class="empty-state-text">
+              Add your first task here so you can see the day at a glance.
+            </p>
+          </div>
+        </article>
+
+        <article class="card panel-card" aria-labelledby="notes-heading">
+          <div class="card-heading">
+            <div>
+              <h2 id="notes-heading">Notes</h2>
+              <p class="card-subtitle">
+                Capture quick thoughts before they disappear.
+              </p>
+            </div>
+          </div>
+
+          <div class="empty-state-block">
+            <p class="empty-state-title">Nothing written yet.</p>
+            <p class="empty-state-text">
+              Use this space for reminders, snippets, or anything you want to
+              keep visible.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section class="card background-card" aria-labelledby="background-heading">
+        <div class="card-heading">
+          <div>
+            <h2 id="background-heading">Background Controls</h2>
+            <p class="card-subtitle">
+              Placeholder controls for changing the page background.
+            </p>
+          </div>
+        </div>
+
+        <div class="control-row" aria-label="Background presets">
+          <button class="control-chip" type="button">Neutral</button>
+          <button class="control-chip" type="button">Soft Light</button>
+          <button class="control-chip" type="button">Slate</button>
+        </div>
+
+        <p class="empty-state">
+          These controls are ready for future background options such as
+          colours, gradients, or images.
+        </p>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
