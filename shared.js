@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   background: "dashboard.background",
   pomodoro: "dashboard.pomodoro",
   cardOrder: "dashboard.cardOrder",
+  cardMinimized: "dashboard.cardMinimized",
 };
 
 export const CUSTOM_BACKGROUND_ID = "custom-image";

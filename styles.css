@@ -127,6 +127,19 @@ body[data-background="sky-veil"] {
   position: relative;
 }
 
+.dashboard-card__body {
+  display: grid;
+  gap: inherit;
+}
+
+.dashboard-card.is-minimized {
+  min-height: 0;
+}
+
+.dashboard-card.is-minimized .dashboard-card__body {
+  display: none;
+}
+
 .dashboard-card--full {
   grid-column: 1 / -1;
 }
@@ -137,6 +150,48 @@ body[data-background="sky-veil"] {
 
 .dashboard-card__header {
   align-items: center;
+}
+
+.dashboard-card__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboard-card__toggle {
+  appearance: none;
+  border: 1px solid rgba(214, 219, 226, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 8px 12px;
+  color: #475467;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.dashboard-card__toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(170, 181, 193, 1);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+  color: #344054;
+}
+
+.dashboard-card.is-minimized .dashboard-card__toggle {
+  background: rgba(17, 24, 39, 0.06);
+  border-color: rgba(17, 24, 39, 0.18);
+  color: #111827;
 }
 
 .dashboard-card__drag-handle {
@@ -1063,6 +1118,7 @@ body[data-background="sky-veil"] {
 .button:focus-visible,
 .link-action:focus-visible,
 .task-delete:focus-visible,
+.dashboard-card__toggle:focus-visible,
 .dashboard-card__drag-handle:focus-visible,
 .field-input:focus-visible,
 .notes-input:focus-visible {
@@ -1281,6 +1337,11 @@ body[data-background="sky-veil"] {
     font-size: 0.76rem;
   }
 
+  .dashboard-card__toggle {
+    padding: 7px 10px;
+    font-size: 0.74rem;
+  }
+
   .pomodoro-card {
     min-height: auto;
   }
@@ -1326,6 +1387,7 @@ body[data-background="sky-veil"] {
   .link-action,
   .task-delete,
   .background-option,
+  .dashboard-card__toggle,
   .dashboard-card__drag-handle {
     transition: none;
   }
@@ -1336,6 +1398,7 @@ body[data-background="sky-veil"] {
   .link-action:hover,
   .task-delete:hover,
   .background-option:hover,
+  .dashboard-card__toggle:hover,
   .dashboard-card__drag-handle:hover {
     transform: none;
   }

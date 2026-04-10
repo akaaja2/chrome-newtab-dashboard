@@ -21,6 +21,55 @@ function getAvailableDashboardCardIds() {
     .filter((cardId) => typeof cardId === "string" && cardId.length > 0);
 }
 
+function getDashboardCardBodyElement(cardElement) {
+  return cardElement.querySelector("[data-dashboard-card-body]");
+}
+
+function getDashboardCardToggleButton(cardElement) {
+  return cardElement.querySelector("[data-dashboard-card-toggle]");
+}
+
+function getDashboardCardLabel(cardElement, fallbackLabel = "card") {
+  const headingElement = cardElement.querySelector("h1, h2, h3");
+
+  if (headingElement) {
+    const headingLabel = String(headingElement.textContent || "").trim();
+
+    if (headingLabel) {
+      return headingLabel;
+    }
+  }
+
+  return fallbackLabel;
+}
+
+function normalizeDashboardCardMinimizedState(
+  savedMinimizedCardIds,
+  availableCardIds = getAvailableDashboardCardIds(),
+) {
+  const availableCardSet = new Set(availableCardIds);
+  const seenCardIds = new Set();
+  const normalizedState = [];
+  const savedCardIds = Array.isArray(savedMinimizedCardIds) ? savedMinimizedCardIds : [];
+
+  for (const rawCardId of savedCardIds) {
+    const cardId = String(rawCardId || "").trim();
+
+    if (!cardId || seenCardIds.has(cardId) || !availableCardSet.has(cardId)) {
+      continue;
+    }
+
+    seenCardIds.add(cardId);
+    normalizedState.push(cardId);
+  }
+
+  return normalizedState;
+}
+
+function isDashboardCardMinimized(cardId) {
+  return state.layout.minimizedCardIds.includes(cardId);
+}
+
 // The saved order is built from known card IDs, then any new cards are appended
 // so older saved layouts keep working when the dashboard grows later.
 function normalizeDashboardCardOrder(savedOrder, availableCardIds = getAvailableDashboardCardIds()) {
@@ -62,9 +111,28 @@ function updateDashboardDragClasses() {
     const cardId = cardElement.dataset.dashboardCardId;
     const isDragging = cardId === state.layout.draggingCardId;
     const isDropTarget = cardId === state.layout.dropTargetCardId;
+    const isMinimized = cardId ? isDashboardCardMinimized(cardId) : false;
+    const bodyElement = getDashboardCardBodyElement(cardElement);
+    const toggleButton = getDashboardCardToggleButton(cardElement);
 
     cardElement.classList.toggle("is-dragging", isDragging);
     cardElement.classList.toggle("is-drop-target", isDropTarget);
+    cardElement.classList.toggle("is-minimized", isMinimized);
+
+    if (bodyElement) {
+      bodyElement.hidden = isMinimized;
+    }
+
+    if (toggleButton) {
+      const cardLabel = getDashboardCardLabel(cardElement);
+      toggleButton.setAttribute("aria-expanded", String(!isMinimized));
+      toggleButton.textContent = isMinimized ? "Restore" : "Minimise";
+      toggleButton.title = isMinimized ? "Restore card" : "Minimise card";
+      toggleButton.setAttribute(
+        "aria-label",
+        `${isMinimized ? "Restore" : "Minimise"} ${cardLabel}`,
+      );
+    }
 
     if (isDropTarget && state.layout.dropPosition) {
       cardElement.dataset.dropPosition = state.layout.dropPosition;
@@ -79,6 +147,21 @@ function clearDashboardDragState() {
   state.layout.dropTargetCardId = null;
   state.layout.dropPosition = null;
   updateDashboardDragClasses();
+}
+
+function toggleDashboardCardMinimizedState(cardId) {
+  if (!cardId) {
+    return false;
+  }
+
+  const nextMinimizedCardIds = state.layout.minimizedCardIds.includes(cardId)
+    ? state.layout.minimizedCardIds.filter((minimizedCardId) => minimizedCardId !== cardId)
+    : [cardId, ...state.layout.minimizedCardIds];
+
+  state.layout.minimizedCardIds = normalizeDashboardCardMinimizedState(nextMinimizedCardIds);
+  updateDashboardDragClasses();
+
+  return true;
 }
 
 function setDashboardDropTarget(cardId, dropPosition) {
@@ -188,9 +271,14 @@ function renderDashboardLayout() {
     state.layout.cardOrder,
     Array.from(availableCards.keys()),
   );
+  const nextMinimizedCardIds = normalizeDashboardCardMinimizedState(
+    state.layout.minimizedCardIds,
+    Array.from(availableCards.keys()),
+  );
   const fragment = document.createDocumentFragment();
 
   state.layout.cardOrder = nextOrder;
+  state.layout.minimizedCardIds = nextMinimizedCardIds;
 
   for (const cardId of nextOrder) {
     const cardElement = availableCards.get(cardId);
@@ -208,6 +296,10 @@ async function persistDashboardLayout() {
   return writeStoredValue(STORAGE_KEYS.cardOrder, state.layout.cardOrder);
 }
 
+async function persistDashboardMinimizedState() {
+  return writeStoredValue(STORAGE_KEYS.cardMinimized, state.layout.minimizedCardIds);
+}
+
 // Restoring the layout is just moving existing cards into the saved ID order.
 async function loadSavedDashboardLayout() {
   if (!dom.dashboardLayoutElement) {
@@ -215,9 +307,12 @@ async function loadSavedDashboardLayout() {
   }
 
   const savedCardOrder = await readStoredValue(STORAGE_KEYS.cardOrder, []);
+  const savedMinimizedCardIds = await readStoredValue(STORAGE_KEYS.cardMinimized, []);
   state.layout.cardOrder = normalizeDashboardCardOrder(savedCardOrder);
+  state.layout.minimizedCardIds = normalizeDashboardCardMinimizedState(savedMinimizedCardIds);
   renderDashboardLayout();
   await persistDashboardLayout();
+  await persistDashboardMinimizedState();
 }
 
 // Drag start begins from the handle so inner controls stay clickable and safe.
@@ -337,6 +432,25 @@ function handleDashboardDragEnd() {
   clearDashboardDragState();
 }
 
+function handleDashboardLayoutClick(event) {
+  const toggleButton = event.target.closest("[data-dashboard-card-toggle]");
+
+  if (!toggleButton || !dom.dashboardLayoutElement.contains(toggleButton)) {
+    return;
+  }
+
+  const cardElement = toggleButton.closest("[data-dashboard-card-id]");
+  const cardId = cardElement ? cardElement.dataset.dashboardCardId : "";
+
+  if (!cardId) {
+    return;
+  }
+
+  if (toggleDashboardCardMinimizedState(cardId)) {
+    void persistDashboardMinimizedState();
+  }
+}
+
 export async function initDashboardLayout() {
   if (!dom.dashboardLayoutElement) {
     return;
@@ -350,6 +464,7 @@ export async function initDashboardLayout() {
 
   dom.dashboardLayoutElement.addEventListener("dragstart", handleDashboardDragStart);
   dom.dashboardLayoutElement.addEventListener("dragover", handleDashboardDragOver);
+  dom.dashboardLayoutElement.addEventListener("click", handleDashboardLayoutClick);
   dom.dashboardLayoutElement.addEventListener("drop", (event) => {
     void handleDashboardDrop(event);
   });

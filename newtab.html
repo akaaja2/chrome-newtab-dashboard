@@ -19,30 +19,45 @@
             <div>
               <p class="section-kicker">New Tab Dashboard</p>
             </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag Clock card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="clock-card-body"
+                aria-expanded="true"
+                aria-label="Minimise clock card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Clock card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
           </div>
-          <div class="hero-copy" aria-live="polite" aria-atomic="true">
-            <h1 id="clock-heading" class="hero-time">
-              <span id="clock-time">09:41</span>
-            </h1>
-            <p class="hero-date">
-              <span id="clock-date">Wednesday, 9 April 2026</span>
+          <div class="dashboard-card__body" id="clock-card-body" data-dashboard-card-body>
+            <div class="hero-copy" aria-live="polite" aria-atomic="true">
+              <h1 id="clock-heading" class="hero-time">
+                <span id="clock-time">09:41</span>
+              </h1>
+              <p class="hero-date">
+                <span id="clock-date">Wednesday, 9 April 2026</span>
+              </p>
+            </div>
+            <p class="empty-state hero-state">
+              Your live clock and date appear here. The large header keeps the page
+              easy to scan at a glance, and the values update every second.
             </p>
           </div>
-          <p class="empty-state hero-state">
-            Your live clock and date appear here. The large header keeps the page
-            easy to scan at a glance, and the values update every second.
-          </p>
         </section>
 
         <article
@@ -59,95 +74,108 @@
                 Drop a task here or start a focused work session manually.
               </p>
             </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag Pomodoro card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="pomodoro-card-body"
+                aria-expanded="true"
+                aria-label="Minimise pomodoro card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Pomodoro card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
           </div>
-
-          <div class="pomodoro-modes" role="group" aria-label="Pomodoro modes">
-            <button class="pomodoro-mode-button is-selected" type="button" data-pomodoro-mode="work" aria-pressed="true">
-              Work
-            </button>
-            <button class="pomodoro-mode-button" type="button" data-pomodoro-mode="shortBreak" aria-pressed="false">
-              Short break
-            </button>
-            <button class="pomodoro-mode-button" type="button" data-pomodoro-mode="longBreak" aria-pressed="false">
-              Long break
-            </button>
-          </div>
-
-          <div class="pomodoro-display" aria-live="polite" aria-atomic="true">
-            <p class="pomodoro-display__mode" id="pomodoro-current-mode">
-              Work session
-            </p>
-            <p class="pomodoro-display__time" id="pomodoro-remaining">
-              25:00
-            </p>
-            <p class="pomodoro-display__label" id="pomodoro-session-label">
-              Focus session
-            </p>
-          </div>
-
-          <label class="field pomodoro-label-field" for="pomodoro-label-input">
-            <span class="field-label">Session label</span>
-            <input
-              class="field-input"
-              id="pomodoro-label-input"
-              name="pomodoro-label"
-              type="text"
-              maxlength="80"
-              autocomplete="off"
-              placeholder="Focus session"
-            />
-          </label>
-
-          <div class="pomodoro-controls">
-            <button class="button button--primary" id="pomodoro-start" type="button">
-              Start
-            </button>
-            <button class="button button--secondary" id="pomodoro-pause" type="button">
-              Pause
-            </button>
-            <button class="button button--secondary" id="pomodoro-reset" type="button">
-              Reset
-            </button>
-          </div>
-
-          <div class="pomodoro-meta">
-            <p class="pomodoro-meta__item" id="pomodoro-next-break">
-              Next suggested break: Short break
-            </p>
-            <p class="pomodoro-meta__item" id="pomodoro-completed-count">
-              Completed today: 0
-            </p>
-          </div>
-
-          <p class="pomodoro-status" id="pomodoro-status" role="status" aria-live="polite">
-            Timer is paused.
-          </p>
-
-          <div class="pomodoro-sessions">
-            <div class="card-heading pomodoro-sessions__heading">
-              <div>
-                <h3 class="pomodoro-sessions__title">Today's sessions</h3>
-                <p class="pomodoro-sessions__subtitle">
-                  Only completed work sessions are shown here.
-                </p>
-              </div>
+          <div class="dashboard-card__body" id="pomodoro-card-body" data-dashboard-card-body>
+            <div class="pomodoro-modes" role="group" aria-label="Pomodoro modes">
+              <button class="pomodoro-mode-button is-selected" type="button" data-pomodoro-mode="work" aria-pressed="true">
+                Work
+              </button>
+              <button class="pomodoro-mode-button" type="button" data-pomodoro-mode="shortBreak" aria-pressed="false">
+                Short break
+              </button>
+              <button class="pomodoro-mode-button" type="button" data-pomodoro-mode="longBreak" aria-pressed="false">
+                Long break
+              </button>
             </div>
 
-            <p class="empty-state" id="pomodoro-empty-state">
-              No completed work sessions yet today.
+            <div class="pomodoro-display" aria-live="polite" aria-atomic="true">
+              <p class="pomodoro-display__mode" id="pomodoro-current-mode">
+                Work session
+              </p>
+              <p class="pomodoro-display__time" id="pomodoro-remaining">
+                25:00
+              </p>
+              <p class="pomodoro-display__label" id="pomodoro-session-label">
+                Focus session
+              </p>
+            </div>
+
+            <label class="field pomodoro-label-field" for="pomodoro-label-input">
+              <span class="field-label">Session label</span>
+              <input
+                class="field-input"
+                id="pomodoro-label-input"
+                name="pomodoro-label"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+                placeholder="Focus session"
+              />
+            </label>
+
+            <div class="pomodoro-controls">
+              <button class="button button--primary" id="pomodoro-start" type="button">
+                Start
+              </button>
+              <button class="button button--secondary" id="pomodoro-pause" type="button">
+                Pause
+              </button>
+              <button class="button button--secondary" id="pomodoro-reset" type="button">
+                Reset
+              </button>
+            </div>
+
+            <div class="pomodoro-meta">
+              <p class="pomodoro-meta__item" id="pomodoro-next-break">
+                Next suggested break: Short break
+              </p>
+              <p class="pomodoro-meta__item" id="pomodoro-completed-count">
+                Completed today: 0
+              </p>
+            </div>
+
+            <p class="pomodoro-status" id="pomodoro-status" role="status" aria-live="polite">
+              Timer is paused.
             </p>
-            <ul class="pomodoro-session-list" id="pomodoro-session-list" aria-label="Completed Pomodoro sessions today"></ul>
+
+            <div class="pomodoro-sessions">
+              <div class="card-heading pomodoro-sessions__heading">
+                <div>
+                  <h3 class="pomodoro-sessions__title">Today's sessions</h3>
+                  <p class="pomodoro-sessions__subtitle">
+                    Only completed work sessions are shown here.
+                  </p>
+                </div>
+              </div>
+              <p class="empty-state" id="pomodoro-empty-state">
+                No completed work sessions yet today.
+              </p>
+              <ul class="pomodoro-session-list" id="pomodoro-session-list" aria-label="Completed Pomodoro sessions today"></ul>
+            </div>
           </div>
         </article>
 
@@ -158,83 +186,97 @@
           aria-labelledby="links-heading"
         >
           <div class="card-heading dashboard-card__header">
-          <div>
-            <h2 id="links-heading">Favourite Links</h2>
-            <p class="card-subtitle">
-              Quick access to the sites you open most often.
-            </p>
+            <div>
+              <h2 id="links-heading">Favourite Links</h2>
+              <p class="card-subtitle">
+                Quick access to the sites you open most often.
+              </p>
+            </div>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="links-card-body"
+                aria-expanded="true"
+                aria-label="Minimise favourite links card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Favourite Links card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
           </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag Favourite Links card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
+          <div class="dashboard-card__body" id="links-card-body" data-dashboard-card-body>
+            <form class="link-form" id="link-form" novalidate>
+              <div class="form-grid">
+                <label class="field" for="link-title">
+                  <span class="field-label">Title</span>
+                  <input
+                    class="field-input"
+                    id="link-title"
+                    name="title"
+                    type="text"
+                    maxlength="80"
+                    autocomplete="off"
+                    placeholder="e.g. Gmail"
+                    required
+                  />
+                </label>
+
+                <label class="field" for="link-url">
+                  <span class="field-label">URL</span>
+                  <input
+                    class="field-input"
+                    id="link-url"
+                    name="url"
+                    type="url"
+                    inputmode="url"
+                    autocomplete="off"
+                    placeholder="https://example.com"
+                    required
+                  />
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button class="button button--primary" id="link-submit" type="submit">
+                  Add link
+                </button>
+                <button
+                  class="button button--secondary"
+                  id="link-cancel"
+                  type="button"
+                  hidden
+                >
+                  Cancel edit
+                </button>
+                <p class="form-message" id="link-message" role="status" aria-live="polite"></p>
+              </div>
+            </form>
+
+            <div class="link-results">
+              <p class="empty-state" id="links-empty-state">
+                No saved links yet. Add your first favourite link using the form
+                above.
+              </p>
+              <div
+                class="link-grid"
+                id="links-grid"
+                aria-label="Saved favourite links"
+              ></div>
+            </div>
           </div>
-
-        <form class="link-form" id="link-form" novalidate>
-          <div class="form-grid">
-            <label class="field" for="link-title">
-              <span class="field-label">Title</span>
-              <input
-                class="field-input"
-                id="link-title"
-                name="title"
-                type="text"
-                maxlength="80"
-                autocomplete="off"
-                placeholder="e.g. Gmail"
-                required
-              />
-            </label>
-
-            <label class="field" for="link-url">
-              <span class="field-label">URL</span>
-              <input
-                class="field-input"
-                id="link-url"
-                name="url"
-                type="url"
-                inputmode="url"
-                autocomplete="off"
-                placeholder="https://example.com"
-                required
-              />
-            </label>
-          </div>
-
-          <div class="form-actions">
-            <button class="button button--primary" id="link-submit" type="submit">
-              Add link
-            </button>
-            <button
-              class="button button--secondary"
-              id="link-cancel"
-              type="button"
-              hidden
-            >
-              Cancel edit
-            </button>
-            <p class="form-message" id="link-message" role="status" aria-live="polite"></p>
-          </div>
-        </form>
-
-        <div class="link-results">
-          <p class="empty-state" id="links-empty-state">
-            No saved links yet. Add your first favourite link using the form
-            above.
-          </p>
-          <div
-            class="link-grid"
-            id="links-grid"
-            aria-label="Saved favourite links"
-          ></div>
-        </div>
         </section>
 
         <article
@@ -250,45 +292,59 @@
                 Keep a short list of what matters today.
               </p>
             </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag To-Do List card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="todo-card-body"
+                aria-expanded="true"
+                aria-label="Minimise to-do list card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag To-Do List card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
           </div>
+          <div class="dashboard-card__body" id="todo-card-body" data-dashboard-card-body>
+            <form class="task-form" id="task-form" novalidate>
+              <label class="field" for="task-input">
+                <span class="field-label">New task</span>
+                <input
+                  class="field-input"
+                  id="task-input"
+                  name="task"
+                  type="text"
+                  maxlength="140"
+                  autocomplete="off"
+                  placeholder="Add a task and press Enter"
+                  required
+                />
+              </label>
+              <p class="form-message" id="task-message" role="status" aria-live="polite"></p>
+            </form>
 
-          <form class="task-form" id="task-form" novalidate>
-            <label class="field" for="task-input">
-              <span class="field-label">New task</span>
-              <input
-                class="field-input"
-                id="task-input"
-                name="task"
-                type="text"
-                maxlength="140"
-                autocomplete="off"
-                placeholder="Add a task and press Enter"
-                required
-              />
-            </label>
-            <p class="form-message" id="task-message" role="status" aria-live="polite"></p>
-          </form>
-
-          <p class="task-hint">
-            Drag a task here to start a focus session.
-          </p>
-
-          <div class="task-results">
-            <p class="empty-state" id="tasks-empty-state">
-              No tasks yet. Add one above to get started.
+            <p class="task-hint">
+              Drag a task here to start a focus session.
             </p>
-            <ul class="task-list" id="task-list" aria-label="Saved tasks"></ul>
+
+            <div class="task-results">
+              <p class="empty-state" id="tasks-empty-state">
+                No tasks yet. Add one above to get started.
+              </p>
+              <ul class="task-list" id="task-list" aria-label="Saved tasks"></ul>
+            </div>
           </div>
         </article>
 
@@ -305,37 +361,51 @@
                 Capture quick thoughts before they disappear.
               </p>
             </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag Notes card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="notes-card-body"
+                aria-expanded="true"
+                aria-label="Minimise notes card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Notes card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
           </div>
+          <div class="dashboard-card__body" id="notes-card-body" data-dashboard-card-body>
+            <label class="notes-field" for="notes-input">
+              <span class="field-label">Quick notes</span>
+              <textarea
+                class="notes-input"
+                id="notes-input"
+                name="notes"
+                placeholder="Write a reminder, a rough idea, or anything you want to keep handy."
+                rows="10"
+              ></textarea>
+            </label>
 
-          <label class="notes-field" for="notes-input">
-            <span class="field-label">Quick notes</span>
-            <textarea
-              class="notes-input"
-              id="notes-input"
-              name="notes"
-              placeholder="Write a reminder, a rough idea, or anything you want to keep handy."
-              rows="10"
-            ></textarea>
-          </label>
-
-          <div class="notes-footer">
-            <p class="empty-state notes-help">
-              Your note saves automatically as you type.
-            </p>
-            <p class="notes-status" id="notes-status" role="status" aria-live="polite">
-              Not saved yet.
-            </p>
+            <div class="notes-footer">
+              <p class="empty-state notes-help">
+                Your note saves automatically as you type.
+              </p>
+              <p class="notes-status" id="notes-status" role="status" aria-live="polite">
+                Not saved yet.
+              </p>
+            </div>
           </div>
         </article>
 
@@ -346,105 +416,119 @@
           aria-labelledby="background-heading"
         >
           <div class="card-heading dashboard-card__header">
-          <div>
-            <h2 id="background-heading">Background Controls</h2>
-            <p class="card-subtitle">
-              Choose a subtle preset for the full-page background.
-            </p>
-          </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag Background Controls card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
-          </div>
-
-        <div class="background-options" role="group" aria-label="Background presets">
-          <button class="background-option is-selected" type="button" data-background-id="linen-gradient" aria-pressed="true">
-            <span class="background-option__swatch background-option__swatch--linen"></span>
-            <span class="background-option__text">
-              <span class="background-option__title">Linen</span>
-              <span class="background-option__subtitle">Warm neutral gradient</span>
-            </span>
-          </button>
-          <button class="background-option" type="button" data-background-id="mist-gradient" aria-pressed="false">
-            <span class="background-option__swatch background-option__swatch--mist"></span>
-            <span class="background-option__text">
-              <span class="background-option__title">Mist</span>
-              <span class="background-option__subtitle">Cool soft gradient</span>
-            </span>
-          </button>
-          <button class="background-option" type="button" data-background-id="slate-gradient" aria-pressed="false">
-            <span class="background-option__swatch background-option__swatch--slate"></span>
-            <span class="background-option__text">
-              <span class="background-option__title">Slate</span>
-              <span class="background-option__subtitle">Deep low-contrast gradient</span>
-            </span>
-          </button>
-          <button class="background-option" type="button" data-background-id="paper-drift" aria-pressed="false">
-            <span class="background-option__swatch background-option__swatch--paper"></span>
-            <span class="background-option__text">
-              <span class="background-option__title">Paper Drift</span>
-              <span class="background-option__subtitle">Local SVG image</span>
-            </span>
-          </button>
-          <button class="background-option" type="button" data-background-id="sky-veil" aria-pressed="false">
-            <span class="background-option__swatch background-option__swatch--sky"></span>
-            <span class="background-option__text">
-              <span class="background-option__title">Sky Veil</span>
-              <span class="background-option__subtitle">Local SVG image</span>
-            </span>
-          </button>
-        </div>
-
-        <p class="empty-state">
-          Your chosen background is saved automatically.
-        </p>
-        <p class="background-status" id="background-status" role="status" aria-live="polite">
-          Using Linen.
-        </p>
-
-        <div class="custom-background" aria-labelledby="custom-background-heading">
-          <div class="custom-background__header">
             <div>
-              <h3 id="custom-background-heading" class="custom-background__title">
-                Custom image
-              </h3>
-              <p class="custom-background__subtitle">
-                Upload a small image from your device.
+              <h2 id="background-heading">Background Controls</h2>
+              <p class="card-subtitle">
+                Choose a subtle preset for the full-page background.
               </p>
             </div>
-            <button class="button button--secondary button--compact" id="custom-background-clear" type="button" hidden>
-              Remove image
-            </button>
-            <button class="button button--primary button--compact" id="custom-background-use" type="button" hidden>
-              Use saved image
-            </button>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="background-card-body"
+                aria-expanded="true"
+                aria-label="Minimise background controls card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Background Controls card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
           </div>
+          <div class="dashboard-card__body" id="background-card-body" data-dashboard-card-body>
+            <div class="background-options" role="group" aria-label="Background presets">
+              <button class="background-option is-selected" type="button" data-background-id="linen-gradient" aria-pressed="true">
+                <span class="background-option__swatch background-option__swatch--linen"></span>
+                <span class="background-option__text">
+                  <span class="background-option__title">Linen</span>
+                  <span class="background-option__subtitle">Warm neutral gradient</span>
+                </span>
+              </button>
+              <button class="background-option" type="button" data-background-id="mist-gradient" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--mist"></span>
+                <span class="background-option__text">
+                  <span class="background-option__title">Mist</span>
+                  <span class="background-option__subtitle">Cool soft gradient</span>
+                </span>
+              </button>
+              <button class="background-option" type="button" data-background-id="slate-gradient" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--slate"></span>
+                <span class="background-option__text">
+                  <span class="background-option__title">Slate</span>
+                  <span class="background-option__subtitle">Deep low-contrast gradient</span>
+                </span>
+              </button>
+              <button class="background-option" type="button" data-background-id="paper-drift" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--paper"></span>
+                <span class="background-option__text">
+                  <span class="background-option__title">Paper Drift</span>
+                  <span class="background-option__subtitle">Local SVG image</span>
+                </span>
+              </button>
+              <button class="background-option" type="button" data-background-id="sky-veil" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--sky"></span>
+                <span class="background-option__text">
+                  <span class="background-option__title">Sky Veil</span>
+                  <span class="background-option__subtitle">Local SVG image</span>
+                </span>
+              </button>
+            </div>
 
-          <label class="custom-background__field" for="custom-background-input">
-            <span class="field-label">Choose image</span>
-            <input
-              class="field-input"
-              id="custom-background-input"
-              name="custom-background"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml"
-              aria-describedby="custom-background-help custom-background-status"
-            />
-          </label>
+            <p class="empty-state">
+              Your chosen background is saved automatically.
+            </p>
+            <p class="background-status" id="background-status" role="status" aria-live="polite">
+              Using Linen.
+            </p>
 
-          <p class="custom-background__help" id="custom-background-help">
-            Small files work best. Keep the file under 1.5 MB for the smoothest experience.
-          </p>
-          <p class="custom-background__status" id="custom-background-status" role="status" aria-live="polite"></p>
-        </div>
+            <div class="custom-background" aria-labelledby="custom-background-heading">
+              <div class="custom-background__header">
+                <div>
+                  <h3 id="custom-background-heading" class="custom-background__title">
+                    Custom image
+                  </h3>
+                  <p class="custom-background__subtitle">
+                    Upload a small image from your device.
+                  </p>
+                </div>
+                <button class="button button--secondary button--compact" id="custom-background-clear" type="button" hidden>
+                  Remove image
+                </button>
+                <button class="button button--primary button--compact" id="custom-background-use" type="button" hidden>
+                  Use saved image
+                </button>
+              </div>
+
+              <label class="custom-background__field" for="custom-background-input">
+                <span class="field-label">Choose image</span>
+                <input
+                  class="field-input"
+                  id="custom-background-input"
+                  name="custom-background"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml"
+                  aria-describedby="custom-background-help custom-background-status"
+                />
+              </label>
+
+              <p class="custom-background__help" id="custom-background-help">
+                Small files work best. Keep the file under 1.5 MB for the smoothest experience.
+              </p>
+              <p class="custom-background__status" id="custom-background-status" role="status" aria-live="polite"></p>
+            </div>
+          </div>
         </section>
 
         <section
@@ -460,49 +544,64 @@
                 Small reset actions for the dashboard.
               </p>
             </div>
-            <button
-              class="dashboard-card__drag-handle"
-              type="button"
-              draggable="true"
-              data-dashboard-card-handle
-              aria-label="Drag Settings card"
-              title="Drag to reorder"
-            >
-              <span aria-hidden="true">|||</span>
-              <span>Drag</span>
-            </button>
-          </div>
-
-          <details class="settings-panel">
-          <summary class="settings-summary">
-            <span>
-              <span class="settings-title">Reset controls</span>
-              <span class="settings-subtitle">Open to reveal the reset actions.</span>
-            </span>
-            <span class="settings-summary__hint">Open settings</span>
-          </summary>
-
-          <div class="settings-body">
-            <div class="settings-actions" aria-label="Reset dashboard data">
-              <button class="settings-action" type="button" data-reset-action="links">
-                Reset favourite links
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="settings-card-body"
+                aria-expanded="true"
+                aria-label="Minimise settings card"
+                title="Minimise card"
+              >
+                Minimise
               </button>
-              <button class="settings-action" type="button" data-reset-action="tasks">
-                Reset to-do list
-              </button>
-              <button class="settings-action" type="button" data-reset-action="notes">
-                Clear notes
-              </button>
-              <button class="settings-action" type="button" data-reset-action="background">
-                Reset background
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Settings card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
               </button>
             </div>
-
-            <p class="settings-status" id="settings-status" role="status" aria-live="polite">
-              No changes yet.
-            </p>
           </div>
-          </details>
+
+          <div class="dashboard-card__body" id="settings-card-body" data-dashboard-card-body>
+            <details class="settings-panel">
+              <summary class="settings-summary">
+                <span>
+                  <span class="settings-title">Reset controls</span>
+                  <span class="settings-subtitle">Open to reveal the reset actions.</span>
+                </span>
+                <span class="settings-summary__hint">Open settings</span>
+              </summary>
+
+              <div class="settings-body">
+                <div class="settings-actions" aria-label="Reset dashboard data">
+                  <button class="settings-action" type="button" data-reset-action="links">
+                    Reset favourite links
+                  </button>
+                  <button class="settings-action" type="button" data-reset-action="tasks">
+                    Reset to-do list
+                  </button>
+                  <button class="settings-action" type="button" data-reset-action="notes">
+                    Clear notes
+                  </button>
+                  <button class="settings-action" type="button" data-reset-action="background">
+                    Reset background
+                  </button>
+                </div>
+
+                <p class="settings-status" id="settings-status" role="status" aria-live="polite">
+                  No changes yet.
+                </p>
+              </div>
+            </details>
+          </div>
         </section>
       </section>
     </main>

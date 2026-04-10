@@ -42,6 +42,7 @@ export const state = {
   },
   layout: {
     cardOrder: [...DASHBOARD_CARD_ORDER],
+    minimizedCardIds: [],
     draggingCardId: null,
     dropTargetCardId: null,
     dropPosition: null,
