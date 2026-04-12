@@ -120,20 +120,19 @@ function updateDashboardDragClasses() {
     cardElement.classList.toggle("is-minimized", isMinimized);
 
     if (bodyElement) {
-      const isLinksCard = cardId === "links-card";
-      bodyElement.hidden = isMinimized && !isLinksCard;
+      bodyElement.hidden = isMinimized;
     }
 
     if (cardId === "links-card") {
       const linksFormElement = cardElement.querySelector("[data-links-form]");
-      const linksResultsElement = cardElement.querySelector("[data-links-results]");
+      const linksMinimizedViewElement = cardElement.querySelector("[data-links-minimized-view]");
 
       if (linksFormElement) {
         linksFormElement.hidden = isMinimized;
       }
 
-      if (linksResultsElement) {
-        linksResultsElement.hidden = false;
+      if (linksMinimizedViewElement) {
+        linksMinimizedViewElement.hidden = !isMinimized;
       }
     }
 

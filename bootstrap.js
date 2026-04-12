@@ -4,6 +4,7 @@ import { initTodoList } from "./tasks.js";
 import { initNotes } from "./notes.js";
 import { initPomodoro, startPomodoroTicker, stopPomodoroTicker } from "./pomodoro.js";
 import { initBackgrounds } from "./backgrounds.js";
+import { initCardSurface } from "./card-surface.js";
 import { initSettings } from "./settings.js";
 import { startClockTicker } from "./clock.js";
 
@@ -16,6 +17,7 @@ async function bootstrap() {
     initNotes(),
     initPomodoro(),
     initBackgrounds(),
+    initCardSurface(),
     initSettings(),
   ]);
 
@@ -25,4 +27,3 @@ async function bootstrap() {
 }
 
 void bootstrap();
-

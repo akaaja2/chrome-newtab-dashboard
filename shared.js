@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   tasks: "dashboard.tasks",
   note: "dashboard.note",
   background: "dashboard.background",
+  cardSurface: "dashboard.cardSurface",
   pomodoro: "dashboard.pomodoro",
   cardOrder: "dashboard.cardOrder",
   cardMinimized: "dashboard.cardMinimized",
@@ -37,6 +38,13 @@ export const BACKGROUND_OPTIONS = [
 ];
 
 export const DEFAULT_BACKGROUND_ID = BACKGROUND_OPTIONS[0].id;
+
+export const CARD_SURFACE_OPTIONS = [
+  { id: "patterned", label: "Patterned" },
+  { id: "opaque", label: "Opaque" },
+];
+
+export const DEFAULT_CARD_SURFACE_ID = CARD_SURFACE_OPTIONS[0].id;
 
 export const DASHBOARD_CARD_ORDER = [
   "clock-card",

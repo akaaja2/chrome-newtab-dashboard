@@ -1,5 +1,6 @@
 import {
   DEFAULT_BACKGROUND_ID,
+  DEFAULT_CARD_SURFACE_ID,
   DASHBOARD_CARD_ORDER,
   POMODORO_MODES,
   getTodayKey,
@@ -39,6 +40,9 @@ export const state = {
   background: {
     selectedId: DEFAULT_BACKGROUND_ID,
     customImage: null,
+  },
+  appearance: {
+    cardSurfaceId: DEFAULT_CARD_SURFACE_ID,
   },
   layout: {
     cardOrder: [...DASHBOARD_CARD_ORDER],

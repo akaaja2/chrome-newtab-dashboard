@@ -217,6 +217,17 @@
               </button>
             </div>
           </div>
+          <div class="links-card__minimized-view" id="links-minimized-view" data-links-minimized-view hidden>
+            <div class="links-card__minimized-header">
+              <p class="links-card__minimized-label">Saved favourites</p>
+              <p class="links-card__minimized-hint">Stored links stay visible while the form is tucked away.</p>
+            </div>
+            <div
+              class="link-grid link-grid--compact"
+              id="links-minimized-grid"
+              aria-label="Saved favourite links"
+            ></div>
+          </div>
           <div class="dashboard-card__body" id="links-card-body" data-dashboard-card-body>
             <div class="link-results" data-links-results>
               <p class="empty-state" id="links-empty-state">
@@ -520,6 +531,40 @@
                 Small files work best. Keep the file under 1.5 MB for the smoothest experience.
               </p>
               <p class="custom-background__status" id="custom-background-status" role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="custom-background" aria-labelledby="card-surface-heading">
+              <div class="custom-background__header">
+                <div>
+                  <h3 id="card-surface-heading" class="custom-background__title">
+                    Card surface
+                  </h3>
+                  <p class="custom-background__subtitle">
+                    Choose whether the component cards stay patterned or switch to a more opaque surface.
+                  </p>
+                </div>
+              </div>
+
+              <div class="background-options background-options--compact" role="group" aria-label="Card surface options">
+                <button class="background-option is-selected" type="button" data-card-surface-id="patterned" aria-pressed="true">
+                  <span class="background-option__swatch background-option__swatch--surface background-option__swatch--grid"></span>
+                  <span class="background-option__text">
+                    <span class="background-option__title">Patterned</span>
+                    <span class="background-option__subtitle">Subtle geometric fill</span>
+                  </span>
+                </button>
+                <button class="background-option" type="button" data-card-surface-id="opaque" aria-pressed="false">
+                  <span class="background-option__swatch background-option__swatch--opaque"></span>
+                  <span class="background-option__text">
+                    <span class="background-option__title">Opaque</span>
+                    <span class="background-option__subtitle">Cleaner solid cards</span>
+                  </span>
+                </button>
+              </div>
+
+              <p class="card-surface__status" id="card-surface-status" role="status" aria-live="polite">
+                Using Patterned cards.
+              </p>
             </div>
           </div>
         </section>

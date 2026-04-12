@@ -11,6 +11,7 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 - To-do list with completion and removal controls
 - Quick notes with autosave
 - Built-in geometric and local image backgrounds
+- Optional patterned or opaque card surfaces
 - User-uploaded custom background images
 - Compact settings panel with reset actions
 - Storage-backed persistence using `chrome.storage.local`
@@ -36,6 +37,7 @@ chrome-newtab-dashboard/
 |-- links.js
 |-- notes.js
 |-- backgrounds.js
+|-- card-surface.js
 |-- pomodoro.js
 |-- settings.js
 |-- shared.js
@@ -60,6 +62,7 @@ chrome-newtab-dashboard/
 - `bootstrap.js` initializes the dashboard modules in a safe order.
 - `shared.js`, `state.js`, and `dom.js` hold shared constants, state, and DOM references.
 - `layout.js`, `clock.js`, `links.js`, `tasks.js`, `notes.js`, `pomodoro.js`, `backgrounds.js`, and `settings.js` each handle one feature area.
+- `card-surface.js` controls the patterned or opaque card surface preference.
 - `assets/backgrounds/` stores the small local SVG background presets used by the dashboard.
 
 ## Roadmap

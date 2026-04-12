@@ -80,9 +80,12 @@ function getFaviconUrl(url) {
   return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url)}&sz=64`;
 }
 
-function createSavedLinkCard(link) {
+function createSavedLinkCard(link, compact = false) {
   const card = document.createElement("article");
   card.className = "saved-link-card";
+  if (compact) {
+    card.classList.add("saved-link-card--compact");
+  }
   card.dataset.linkCard = "true";
   card.dataset.linkId = link.id;
   card.tabIndex = 0;
@@ -121,26 +124,34 @@ function createSavedLinkCard(link) {
   url.className = "saved-link-card__url";
   url.textContent = formatDisplayUrl(link.url);
 
-  text.append(title, url);
+  if (compact) {
+    text.append(title);
+  } else {
+    text.append(title, url);
+  }
   content.append(favicon, text);
 
-  const actions = document.createElement("div");
-  actions.className = "saved-link-card__actions";
+  if (!compact) {
+    const actions = document.createElement("div");
+    actions.className = "saved-link-card__actions";
 
-  const editButton = document.createElement("button");
-  editButton.className = "link-action";
-  editButton.type = "button";
-  editButton.dataset.linkAction = "edit";
-  editButton.textContent = "Edit";
+    const editButton = document.createElement("button");
+    editButton.className = "link-action";
+    editButton.type = "button";
+    editButton.dataset.linkAction = "edit";
+    editButton.textContent = "Edit";
 
-  const deleteButton = document.createElement("button");
-  deleteButton.className = "link-action link-action--danger";
-  deleteButton.type = "button";
-  deleteButton.dataset.linkAction = "delete";
-  deleteButton.textContent = "Delete";
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "link-action link-action--danger";
+    deleteButton.type = "button";
+    deleteButton.dataset.linkAction = "delete";
+    deleteButton.textContent = "Delete";
 
-  actions.append(editButton, deleteButton);
-  card.append(content, actions);
+    actions.append(editButton, deleteButton);
+    card.append(content, actions);
+  } else {
+    card.append(content);
+  }
 
   return card;
 }
@@ -168,10 +179,17 @@ function renderLinks() {
     return;
   }
 
+  const isMinimized = state.layout.minimizedCardIds.includes("links-card");
   dom.linksGridElement.innerHTML = "";
+  if (dom.linksMinimizedGridElement) {
+    dom.linksMinimizedGridElement.innerHTML = "";
+  }
 
   if (state.links.items.length === 0) {
     dom.linksEmptyStateElement.hidden = false;
+    if (dom.linksMinimizedViewElement) {
+      dom.linksMinimizedViewElement.hidden = true;
+    }
     return;
   }
 
@@ -179,6 +197,13 @@ function renderLinks() {
 
   for (const link of state.links.items) {
     dom.linksGridElement.appendChild(createSavedLinkCard(link));
+    if (dom.linksMinimizedGridElement) {
+      dom.linksMinimizedGridElement.appendChild(createSavedLinkCard(link, true));
+    }
+  }
+
+  if (dom.linksMinimizedViewElement) {
+    dom.linksMinimizedViewElement.hidden = !isMinimized;
   }
 }
 
@@ -314,4 +339,6 @@ export async function initFavouriteLinks() {
   dom.linkCancelButton?.addEventListener("click", () => resetLinkForm(true));
   dom.linksGridElement.addEventListener("click", handleLinksGridClick);
   dom.linksGridElement.addEventListener("keydown", handleLinksGridKeydown);
+  dom.linksMinimizedGridElement?.addEventListener("click", handleLinksGridClick);
+  dom.linksMinimizedGridElement?.addEventListener("keydown", handleLinksGridKeydown);
 }

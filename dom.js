@@ -20,6 +20,8 @@ export const dom = {
   dashboardLayoutElement: document.querySelector("[data-dashboard-layout]"),
 
   linksGridElement: document.getElementById("links-grid"),
+  linksMinimizedGridElement: document.getElementById("links-minimized-grid"),
+  linksMinimizedViewElement: document.getElementById("links-minimized-view"),
   linksEmptyStateElement: document.getElementById("links-empty-state"),
   linkFormElement: document.getElementById("link-form"),
   linkTitleInput: document.getElementById("link-title"),
@@ -43,6 +45,9 @@ export const dom = {
   customBackgroundStatusElement: document.getElementById("custom-background-status"),
   customBackgroundClearButton: document.getElementById("custom-background-clear"),
   customBackgroundUseButton: document.getElementById("custom-background-use"),
+
+  cardSurfaceOptionButtons: Array.from(document.querySelectorAll("[data-card-surface-id]")),
+  cardSurfaceStatusElement: document.getElementById("card-surface-status"),
 
   settingsPanelElement: document.querySelector(".settings-panel"),
   settingsSummaryHintElement: document.querySelector(".settings-summary__hint"),
