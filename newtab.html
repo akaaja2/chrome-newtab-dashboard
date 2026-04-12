@@ -218,7 +218,19 @@
             </div>
           </div>
           <div class="dashboard-card__body" id="links-card-body" data-dashboard-card-body>
-            <form class="link-form" id="link-form" novalidate>
+            <div class="link-results" data-links-results>
+              <p class="empty-state" id="links-empty-state">
+                No saved links yet. Add your first favourite link using the form
+                above.
+              </p>
+              <div
+                class="link-grid"
+                id="links-grid"
+                aria-label="Saved favourite links"
+              ></div>
+            </div>
+
+            <form class="link-form" id="link-form" novalidate data-links-form>
               <div class="form-grid">
                 <label class="field" for="link-title">
                   <span class="field-label">Title</span>
@@ -264,18 +276,6 @@
                 <p class="form-message" id="link-message" role="status" aria-live="polite"></p>
               </div>
             </form>
-
-            <div class="link-results">
-              <p class="empty-state" id="links-empty-state">
-                No saved links yet. Add your first favourite link using the form
-                above.
-              </p>
-              <div
-                class="link-grid"
-                id="links-grid"
-                aria-label="Saved favourite links"
-              ></div>
-            </div>
           </div>
         </section>
 
@@ -419,7 +419,7 @@
             <div>
               <h2 id="background-heading">Background Controls</h2>
               <p class="card-subtitle">
-                Choose a subtle preset for the full-page background.
+                Choose a geometric preset for the full-page background.
               </p>
             </div>
             <div class="dashboard-card__controls">
@@ -449,39 +449,32 @@
           </div>
           <div class="dashboard-card__body" id="background-card-body" data-dashboard-card-body>
             <div class="background-options" role="group" aria-label="Background presets">
-              <button class="background-option is-selected" type="button" data-background-id="linen-gradient" aria-pressed="true">
-                <span class="background-option__swatch background-option__swatch--linen"></span>
+              <button class="background-option is-selected" type="button" data-background-id="geometric-grid" aria-pressed="true">
+                <span class="background-option__swatch background-option__swatch--grid"></span>
                 <span class="background-option__text">
-                  <span class="background-option__title">Linen</span>
-                  <span class="background-option__subtitle">Warm neutral gradient</span>
+                  <span class="background-option__title">Grid Shift</span>
+                  <span class="background-option__subtitle">Fine intersecting lines</span>
                 </span>
               </button>
-              <button class="background-option" type="button" data-background-id="mist-gradient" aria-pressed="false">
-                <span class="background-option__swatch background-option__swatch--mist"></span>
+              <button class="background-option" type="button" data-background-id="geometric-facet" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--facet"></span>
                 <span class="background-option__text">
-                  <span class="background-option__title">Mist</span>
-                  <span class="background-option__subtitle">Cool soft gradient</span>
+                  <span class="background-option__title">Facet</span>
+                  <span class="background-option__subtitle">Angular paper-like planes</span>
                 </span>
               </button>
-              <button class="background-option" type="button" data-background-id="slate-gradient" aria-pressed="false">
-                <span class="background-option__swatch background-option__swatch--slate"></span>
+              <button class="background-option" type="button" data-background-id="geometric-orbit" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--orbit"></span>
                 <span class="background-option__text">
-                  <span class="background-option__title">Slate</span>
-                  <span class="background-option__subtitle">Deep low-contrast gradient</span>
+                  <span class="background-option__title">Orbit</span>
+                  <span class="background-option__subtitle">Rings and dotted anchors</span>
                 </span>
               </button>
-              <button class="background-option" type="button" data-background-id="paper-drift" aria-pressed="false">
-                <span class="background-option__swatch background-option__swatch--paper"></span>
+              <button class="background-option" type="button" data-background-id="geometric-lattice" aria-pressed="false">
+                <span class="background-option__swatch background-option__swatch--lattice"></span>
                 <span class="background-option__text">
-                  <span class="background-option__title">Paper Drift</span>
-                  <span class="background-option__subtitle">Local SVG image</span>
-                </span>
-              </button>
-              <button class="background-option" type="button" data-background-id="sky-veil" aria-pressed="false">
-                <span class="background-option__swatch background-option__swatch--sky"></span>
-                <span class="background-option__text">
-                  <span class="background-option__title">Sky Veil</span>
-                  <span class="background-option__subtitle">Local SVG image</span>
+                  <span class="background-option__title">Lattice</span>
+                  <span class="background-option__subtitle">Connected diagonal mesh</span>
                 </span>
               </button>
             </div>
@@ -490,7 +483,7 @@
               Your chosen background is saved automatically.
             </p>
             <p class="background-status" id="background-status" role="status" aria-live="polite">
-              Using Linen.
+              Using Grid Shift.
             </p>
 
             <div class="custom-background" aria-labelledby="custom-background-heading">

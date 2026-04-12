@@ -1,5 +1,5 @@
 import { dom } from "./dom.js";
-import { createId, escapeHtml, formatDisplayUrl, normalizeUrl, readStoredValue, setStatus, STORAGE_KEYS, writeStoredValue } from "./shared.js";
+import { createId, formatDisplayUrl, normalizeUrl, readStoredValue, setStatus, STORAGE_KEYS, writeStoredValue } from "./shared.js";
 import { state } from "./state.js";
 
 function setLinkMessage(message, type = "info") {
@@ -76,6 +76,75 @@ function openLink(url) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+function getFaviconUrl(url) {
+  return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url)}&sz=64`;
+}
+
+function createSavedLinkCard(link) {
+  const card = document.createElement("article");
+  card.className = "saved-link-card";
+  card.dataset.linkCard = "true";
+  card.dataset.linkId = link.id;
+  card.tabIndex = 0;
+  card.setAttribute("role", "link");
+  card.setAttribute("aria-label", `Open ${link.title}`);
+
+  const content = document.createElement("div");
+  content.className = "saved-link-card__content";
+
+  const favicon = document.createElement("div");
+  favicon.className = "saved-link-card__favicon";
+  favicon.dataset.initial = link.title.trim().charAt(0).toUpperCase() || "?";
+
+  const faviconImage = document.createElement("img");
+  faviconImage.alt = "";
+  faviconImage.loading = "lazy";
+  faviconImage.decoding = "async";
+  faviconImage.referrerPolicy = "no-referrer";
+  faviconImage.addEventListener("load", () => {
+    favicon.classList.add("has-image");
+  });
+  faviconImage.addEventListener("error", () => {
+    faviconImage.remove();
+  });
+  faviconImage.src = getFaviconUrl(link.url);
+  favicon.appendChild(faviconImage);
+
+  const text = document.createElement("div");
+  text.className = "saved-link-card__text";
+
+  const title = document.createElement("h3");
+  title.className = "saved-link-card__title";
+  title.textContent = link.title;
+
+  const url = document.createElement("p");
+  url.className = "saved-link-card__url";
+  url.textContent = formatDisplayUrl(link.url);
+
+  text.append(title, url);
+  content.append(favicon, text);
+
+  const actions = document.createElement("div");
+  actions.className = "saved-link-card__actions";
+
+  const editButton = document.createElement("button");
+  editButton.className = "link-action";
+  editButton.type = "button";
+  editButton.dataset.linkAction = "edit";
+  editButton.textContent = "Edit";
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "link-action link-action--danger";
+  deleteButton.type = "button";
+  deleteButton.dataset.linkAction = "delete";
+  deleteButton.textContent = "Delete";
+
+  actions.append(editButton, deleteButton);
+  card.append(content, actions);
+
+  return card;
+}
+
 async function deleteLink(id) {
   const nextLinks = state.links.items.filter((link) => link.id !== id);
 
@@ -109,26 +178,7 @@ function renderLinks() {
   dom.linksEmptyStateElement.hidden = true;
 
   for (const link of state.links.items) {
-    const card = document.createElement("article");
-    card.className = "saved-link-card";
-    card.dataset.linkCard = "true";
-    card.dataset.linkId = link.id;
-    card.tabIndex = 0;
-    card.setAttribute("role", "link");
-    card.setAttribute("aria-label", `Open ${link.title}`);
-
-    card.innerHTML = `
-      <div class="saved-link-card__content">
-        <h3 class="saved-link-card__title">${escapeHtml(link.title)}</h3>
-        <p class="saved-link-card__url">${escapeHtml(formatDisplayUrl(link.url))}</p>
-      </div>
-      <div class="saved-link-card__actions">
-        <button class="link-action" type="button" data-link-action="edit">Edit</button>
-        <button class="link-action link-action--danger" type="button" data-link-action="delete">Delete</button>
-      </div>
-    `;
-
-    dom.linksGridElement.appendChild(card);
+    dom.linksGridElement.appendChild(createSavedLinkCard(link));
   }
 }
 

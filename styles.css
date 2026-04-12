@@ -37,34 +37,47 @@ body::before {
   opacity: 1;
 }
 
-body[data-background="linen-gradient"] {
+body[data-background="geometric-grid"] {
   --page-bg-image:
-    linear-gradient(180deg, #f3efe8 0%, #ece7de 100%);
+    linear-gradient(180deg, rgba(245, 247, 250, 0.56), rgba(237, 241, 247, 0.58)),
+    url("assets/backgrounds/geometric-grid.svg");
   --page-overlay:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.58), transparent 42%),
-    radial-gradient(circle at bottom right, rgba(214, 198, 177, 0.28), transparent 40%),
-    linear-gradient(180deg, rgba(255, 248, 241, 0.22), rgba(248, 243, 236, 0.28));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(248, 250, 252, 0.2)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.4), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(148, 163, 184, 0.16), transparent 40%);
 }
 
-body[data-background="mist-gradient"] {
+body[data-background="geometric-facet"] {
   --page-bg-image:
-    linear-gradient(180deg, #edf4fb 0%, #e6eef7 100%);
+    linear-gradient(180deg, rgba(247, 244, 239, 0.56), rgba(240, 236, 229, 0.58)),
+    url("assets/backgrounds/geometric-facet.svg");
   --page-overlay:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.62), transparent 42%),
-    radial-gradient(circle at bottom right, rgba(171, 201, 226, 0.22), transparent 40%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(241, 246, 251, 0.28));
+    linear-gradient(180deg, rgba(255, 251, 245, 0.28), rgba(249, 244, 237, 0.24)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.42), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(186, 148, 106, 0.12), transparent 40%);
 }
 
-body[data-background="slate-gradient"] {
+body[data-background="geometric-orbit"] {
   --page-bg-image:
-    linear-gradient(160deg, #cfd8e3 0%, #b8c3d1 45%, #aab6c6 100%);
+    linear-gradient(180deg, rgba(238, 245, 251, 0.56), rgba(228, 237, 246, 0.58)),
+    url("assets/backgrounds/geometric-orbit.svg");
   --page-overlay:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12)),
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.26), transparent 42%),
-    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.14), transparent 40%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(248, 251, 253, 0.22)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.42), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(130, 161, 201, 0.16), transparent 40%);
 }
 
-body[data-background="paper-drift"] {
+body[data-background="geometric-lattice"] {
+  --page-bg-image:
+    linear-gradient(180deg, rgba(242, 245, 241, 0.56), rgba(233, 238, 231, 0.58)),
+    url("assets/backgrounds/geometric-lattice.svg");
+  --page-overlay:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(247, 250, 245, 0.22)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.38), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(128, 153, 126, 0.14), transparent 40%);
+}
+
+body[data-background="custom-image"] {
   --page-bg-image:
     linear-gradient(180deg, rgba(244, 239, 231, 0.52), rgba(243, 238, 229, 0.52)),
     url("assets/backgrounds/paper-drift.svg");
@@ -72,16 +85,6 @@ body[data-background="paper-drift"] {
     linear-gradient(180deg, rgba(255, 251, 245, 0.38), rgba(248, 245, 239, 0.34)),
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 42%),
     radial-gradient(circle at bottom right, rgba(175, 154, 126, 0.1), transparent 40%);
-}
-
-body[data-background="sky-veil"] {
-  --page-bg-image:
-    linear-gradient(180deg, rgba(234, 243, 250, 0.5), rgba(223, 235, 246, 0.5)),
-    url("assets/backgrounds/sky-veil.svg");
-  --page-overlay:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(248, 251, 253, 0.3)),
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.24), transparent 42%),
-    radial-gradient(circle at bottom right, rgba(152, 186, 218, 0.12), transparent 40%);
 }
 
 /* Main dashboard container. */
@@ -138,6 +141,10 @@ body[data-background="sky-veil"] {
 
 .dashboard-card.is-minimized .dashboard-card__body {
   display: none;
+}
+
+.dashboard-card.is-minimized[data-dashboard-card-id="links-card"] .dashboard-card__body {
+  display: grid;
 }
 
 .dashboard-card--full {
@@ -737,8 +744,50 @@ body[data-background="sky-veil"] {
 }
 
 .saved-link-card__content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.saved-link-card__favicon {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(214, 219, 226, 0.95);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 245, 249, 0.96));
+  color: #667085;
+  font-size: 0.8rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.saved-link-card__favicon::before {
+  content: attr(data-initial);
+  position: relative;
+  z-index: 1;
+}
+
+.saved-link-card__favicon.has-image::before {
+  opacity: 0;
+}
+
+.saved-link-card__favicon img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.saved-link-card__text {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .saved-link-card__title {
@@ -839,29 +888,12 @@ body[data-background="sky-veil"] {
   border: 1px solid rgba(214, 219, 226, 0.95);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 248, 250, 0.96));
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
-  position: relative;
   transition:
     transform 150ms ease,
     border-color 150ms ease,
     box-shadow 150ms ease,
     background-color 150ms ease;
   cursor: grab;
-}
-
-.task-item::before {
-  content: "Drag";
-  position: absolute;
-  inset-inline-end: 16px;
-  inset-block-start: 14px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.12);
-  color: #667085;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  pointer-events: none;
 }
 
 .task-item:hover {
@@ -873,10 +905,6 @@ body[data-background="sky-veil"] {
 .task-item.is-dragging {
   opacity: 0.6;
   cursor: grabbing;
-}
-
-.task-item.is-dragging::before {
-  opacity: 0;
 }
 
 .task-item__main {
@@ -1188,23 +1216,35 @@ body[data-background="sky-veil"] {
 }
 
 .background-option__swatch--linen {
-  background-image: linear-gradient(135deg, #f5ede3 0%, #ece2d3 100%);
+  background-image: url("assets/backgrounds/geometric-grid.svg");
+}
+
+.background-option__swatch--grid {
+  background-image: url("assets/backgrounds/geometric-grid.svg");
 }
 
 .background-option__swatch--mist {
-  background-image: linear-gradient(135deg, #eef4fa 0%, #dde8f3 100%);
+  background-image: url("assets/backgrounds/geometric-facet.svg");
+}
+
+.background-option__swatch--facet {
+  background-image: url("assets/backgrounds/geometric-facet.svg");
 }
 
 .background-option__swatch--slate {
-  background-image: linear-gradient(135deg, #c8d0db 0%, #a8b4c3 100%);
+  background-image: url("assets/backgrounds/geometric-orbit.svg");
+}
+
+.background-option__swatch--orbit {
+  background-image: url("assets/backgrounds/geometric-orbit.svg");
 }
 
 .background-option__swatch--paper {
-  background-image: url("assets/backgrounds/paper-drift.svg");
+  background-image: url("assets/backgrounds/geometric-lattice.svg");
 }
 
-.background-option__swatch--sky {
-  background-image: url("assets/backgrounds/sky-veil.svg");
+.background-option__swatch--lattice {
+  background-image: url("assets/backgrounds/geometric-lattice.svg");
 }
 
 .background-option__text {

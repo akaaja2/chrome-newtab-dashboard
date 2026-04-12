@@ -10,7 +10,7 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 - Favourite links with add, edit, and delete actions
 - To-do list with completion and removal controls
 - Quick notes with autosave
-- Built-in gradient and local image backgrounds
+- Built-in geometric and local image backgrounds
 - User-uploaded custom background images
 - Compact settings panel with reset actions
 - Storage-backed persistence using `chrome.storage.local`
@@ -47,7 +47,11 @@ chrome-newtab-dashboard/
 `-- assets/
     `-- backgrounds/
         |-- paper-drift.svg
-        `-- sky-veil.svg
+        |-- sky-veil.svg
+        |-- geometric-grid.svg
+        |-- geometric-facet.svg
+        |-- geometric-orbit.svg
+        `-- geometric-lattice.svg
 ```
 
 - `manifest.json` defines the extension and points Chrome at the custom new tab page.

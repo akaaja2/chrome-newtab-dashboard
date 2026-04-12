@@ -30,11 +30,10 @@ export const POMODORO_MODES = {
 };
 
 export const BACKGROUND_OPTIONS = [
-  { id: "linen-gradient", label: "Linen" },
-  { id: "mist-gradient", label: "Mist" },
-  { id: "slate-gradient", label: "Slate" },
-  { id: "paper-drift", label: "Paper Drift" },
-  { id: "sky-veil", label: "Sky Veil" },
+  { id: "geometric-grid", label: "Grid Shift" },
+  { id: "geometric-facet", label: "Facet" },
+  { id: "geometric-orbit", label: "Orbit" },
+  { id: "geometric-lattice", label: "Lattice" },
 ];
 
 export const DEFAULT_BACKGROUND_ID = BACKGROUND_OPTIONS[0].id;

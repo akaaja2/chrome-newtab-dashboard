@@ -26,7 +26,8 @@ function hasCustomBackground() {
 
 function getPresetBackgroundLabel(backgroundId) {
   const option = BACKGROUND_OPTIONS.find((item) => item.id === backgroundId);
-  return option ? option.label : "Linen";
+  const defaultOption = BACKGROUND_OPTIONS[0];
+  return option ? option.label : defaultOption.label;
 }
 
 function applyPresetBackgroundStyles(backgroundId) {
@@ -350,7 +351,10 @@ export async function resetBackground() {
 
   renderBackgroundSelection();
   const saved = await persistBackground();
-  setBackgroundStatus("Using Linen. Saved automatically.", saved ? "saved" : "error");
+  setBackgroundStatus(
+    `Using ${getPresetBackgroundLabel(DEFAULT_BACKGROUND_ID)}. Saved automatically.`,
+    saved ? "saved" : "error",
+  );
 
   if (!saved) {
     setBackgroundStatus("Background could not be reset in storage.", "error");
