@@ -1,5 +1,14 @@
 import { dom } from "./dom.js";
-import { createId, formatDisplayUrl, normalizeUrl, readStoredValue, setStatus, STORAGE_KEYS, writeStoredValue } from "./shared.js";
+import {
+  createId,
+  formatDisplayUrl,
+  normalizeUrl,
+  openUrlInNewTab,
+  readStoredValue,
+  setStatus,
+  STORAGE_KEYS,
+  writeStoredValue,
+} from "./shared.js";
 import { state } from "./state.js";
 
 function setLinkMessage(message, type = "info") {
@@ -72,8 +81,8 @@ async function persistLinks() {
   return writeStoredValue(STORAGE_KEYS.links, state.links.items);
 }
 
-function openLink(url) {
-  window.open(url, "_blank", "noopener,noreferrer");
+async function openLink(url) {
+  return openUrlInNewTab(url);
 }
 
 function getFaviconUrl(url) {
@@ -310,7 +319,7 @@ function handleLinksGridClick(event) {
     return;
   }
 
-  openLink(link.url);
+  void openLink(link.url);
 }
 
 function handleLinksGridKeydown(event) {
@@ -330,7 +339,7 @@ function handleLinksGridKeydown(event) {
   const link = state.links.items.find((item) => item.id === linkId);
 
   if (link) {
-    openLink(link.url);
+    void openLink(link.url);
   }
 }
 

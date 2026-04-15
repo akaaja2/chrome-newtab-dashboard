@@ -3,7 +3,7 @@
   "name": "New Tab Dashboard",
   "version": "1.0.0",
   "description": "A clean custom new tab dashboard with clock, Pomodoro timer, motivational quotes, links, daily earnings, tasks, notes, and backgrounds.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "tabs"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   }

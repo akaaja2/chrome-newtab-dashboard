@@ -4,6 +4,7 @@ import {
   formatDisplayUrl,
   getFileNameFromUrlOrPath,
   normalizeUrl,
+  openUrlInNewTab,
   readStoredValue,
   setStatus,
   STORAGE_KEYS,
@@ -138,8 +139,8 @@ async function persistDashboards() {
   return writeStoredValue(STORAGE_KEYS.dashboards, state.dashboards.items);
 }
 
-function openDashboard(url) {
-  window.open(url, "_blank", "noopener,noreferrer");
+async function openDashboard(url) {
+  return openUrlInNewTab(url);
 }
 
 function createDashboardCard(dashboard, compact = false) {
@@ -313,7 +314,7 @@ async function handleDashboardFormSubmit(event) {
   resetDashboardForm(true);
 }
 
-function handleDashboardsGridClick(event) {
+async function handleDashboardsGridClick(event) {
   const actionButton = event.target.closest("[data-dashboard-action]");
   const cardElement = event.target.closest("[data-dashboard-card]");
 
@@ -347,7 +348,14 @@ function handleDashboardsGridClick(event) {
     return;
   }
 
-  openDashboard(dashboard.url);
+  const opened = await openDashboard(dashboard.url);
+
+  if (!opened) {
+    setDashboardMessage(
+      "Chrome blocked the local file. If needed, enable file access for this extension in chrome://extensions.",
+      "error",
+    );
+  }
 }
 
 function handleDashboardsGridKeydown(event) {
@@ -367,7 +375,7 @@ function handleDashboardsGridKeydown(event) {
   const dashboard = state.dashboards.items.find((item) => item.id === dashboardId);
 
   if (dashboard) {
-    openDashboard(dashboard.url);
+    void openDashboard(dashboard.url);
   }
 }
 

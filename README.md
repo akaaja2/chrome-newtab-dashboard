@@ -86,3 +86,4 @@ chrome-newtab-dashboard/
 - Uploaded custom background images are stored locally in `chrome.storage.local`, which is suitable for a small MVP but not ideal for large or long-term image storage.
 - Favourite links accept normal web URLs as well as local file links such as `file:///C:/Users/.../Downloads/report.pdf`.
 - Dashboards are meant for local HTML files and fall back to the file name when an HTML title cannot be read.
+- If Chrome blocks a local file URL, open `chrome://extensions`, find this extension, and enable **Allow access to file URLs**.

@@ -263,6 +263,40 @@ export function stripFileExtension(fileName) {
   return String(fileName || "").replace(/\.(html?|xhtml)$/i, "");
 }
 
+export async function openUrlInNewTab(url) {
+  if (!url) {
+    return false;
+  }
+
+  if (typeof chrome !== "undefined" && chrome.tabs && typeof chrome.tabs.create === "function") {
+    try {
+      return await new Promise((resolve) => {
+        chrome.tabs.create({ url }, (tab) => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            console.warn(
+              "New Tab Dashboard: failed to open a tab.",
+              chrome.runtime.lastError.message,
+            );
+            resolve(false);
+            return;
+          }
+
+          resolve(Boolean(tab));
+        });
+      });
+    } catch (error) {
+      console.warn("New Tab Dashboard: failed to open a tab.", error);
+    }
+  }
+
+  try {
+    return Boolean(window.open(url, "_blank", "noopener,noreferrer"));
+  } catch (error) {
+    console.warn("New Tab Dashboard: failed to open a tab.", error);
+    return false;
+  }
+}
+
 export function getTodayKey(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

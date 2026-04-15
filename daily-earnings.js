@@ -1,4 +1,12 @@
-import { createId, getTodayKey, readStoredValue, setStatus, STORAGE_KEYS, writeStoredValue } from "./shared.js";
+import {
+  createId,
+  getTodayKey,
+  openUrlInNewTab,
+  readStoredValue,
+  setStatus,
+  STORAGE_KEYS,
+  writeStoredValue,
+} from "./shared.js";
 import { dom } from "./dom.js";
 import { state } from "./state.js";
 
@@ -371,12 +379,8 @@ function createQuickLinkButton(link) {
   return button;
 }
 
-function openLinkInNewTab(url) {
-  if (!url) {
-    return false;
-  }
-
-  return Boolean(window.open(url, "_blank", "noopener,noreferrer"));
+async function openLinkInNewTab(url) {
+  return openUrlInNewTab(url);
 }
 
 function renderQuickLinks() {
@@ -480,7 +484,7 @@ function handleEarningsListClick(event) {
   }
 }
 
-function handleQuickLinksClick(event) {
+async function handleQuickLinksClick(event) {
   const linkButton = event.target.closest("[data-earnings-link-url]");
 
   if (!linkButton) {
@@ -488,18 +492,18 @@ function handleQuickLinksClick(event) {
   }
 
   const url = linkButton.dataset.earningsLinkUrl;
-  const opened = openLinkInNewTab(url);
+  const opened = await openLinkInNewTab(url);
 
   if (!opened) {
     setEarningsMessage("Chrome may have blocked the tab. Try allowing pop-ups for this page.", "error");
   }
 }
 
-function openAllQuickLinks() {
+async function openAllQuickLinks() {
   let openedCount = 0;
 
   for (const link of QUICK_LINKS) {
-    if (openLinkInNewTab(link.url)) {
+    if (await openLinkInNewTab(link.url)) {
       openedCount += 1;
     }
   }
@@ -523,7 +527,9 @@ function bindDailyEarningsListeners() {
   });
   dom.earningsListElement?.addEventListener("click", handleEarningsListClick);
   dom.earningsLinksGridElement?.addEventListener("click", handleQuickLinksClick);
-  dom.earningsOpenAllButton?.addEventListener("click", openAllQuickLinks);
+  dom.earningsOpenAllButton?.addEventListener("click", () => {
+    void openAllQuickLinks();
+  });
 
   state.ui.dailyEarningsListenersBound = true;
 }
