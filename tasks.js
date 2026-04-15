@@ -242,8 +242,8 @@ function getHeatmapLevel(count, maxCount) {
   return 4;
 }
 
-function renderTaskCompletionHeatmapMarkup(historyItems) {
-  if (!dom.taskDoneHeatmapElement) {
+function renderTaskCompletionHeatmapMarkup(element, historyItems) {
+  if (!element) {
     return;
   }
 
@@ -257,7 +257,7 @@ function renderTaskCompletionHeatmapMarkup(historyItems) {
     }`;
   }
 
-  dom.taskDoneHeatmapElement.innerHTML = days
+  element.innerHTML = days
     .map((day) => {
       const level = getHeatmapLevel(day.count, maxCount);
       const completionLabel = day.count === 1 ? "1 completion" : `${day.count} completions`;
@@ -495,7 +495,8 @@ function renderTasks() {
 
   renderTaskList(dom.taskListElement, activeTasks);
   renderTaskList(dom.taskDoneListElement, doneTasks, { isDoneList: true });
-  renderTaskCompletionHeatmapMarkup(state.tasks.completionHistory);
+  renderTaskCompletionHeatmapMarkup(dom.taskDoneSummaryHeatmapElement, state.tasks.completionHistory);
+  renderTaskCompletionHeatmapMarkup(dom.taskDoneHeatmapElement, state.tasks.completionHistory);
 
   if (activeTasks.length === 0) {
     dom.tasksEmptyStateElement.hidden = false;

@@ -629,10 +629,17 @@
               </p>
               <ul class="task-list" id="task-list" aria-label="Saved tasks"></ul>
               <details class="task-done-panel" id="task-done-panel">
-                  <summary class="task-done-summary">
+                <summary class="task-done-summary">
+                  <div class="task-done-summary__row">
                     <span class="task-done-summary__title">Done</span>
                     <span class="task-done-summary__count" id="task-done-count">0</span>
-                  </summary>
+                  </div>
+                  <div
+                    class="task-done-summary__heatmap"
+                    id="task-done-summary-heatmap"
+                    aria-hidden="true"
+                  ></div>
+                </summary>
                   <div class="task-done-panel__body">
                     <section class="task-done-history" aria-labelledby="task-done-history-heading">
                       <div class="task-done-history__header">

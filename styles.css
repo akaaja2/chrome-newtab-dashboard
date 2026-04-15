@@ -1633,12 +1633,17 @@ body[data-card-surface="opaque"] {
 
 .task-done-summary {
   list-style: none;
+  display: grid;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.task-done-summary__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  cursor: pointer;
-  user-select: none;
 }
 
 .task-done-summary::-webkit-details-marker {
@@ -1668,6 +1673,19 @@ body[data-card-surface="opaque"] {
   font-size: 0.84rem;
   font-weight: 700;
   text-align: center;
+}
+
+.task-done-summary__heatmap {
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+  min-height: 8px;
+}
+
+.task-done-summary__heatmap .task-done-heatmap__cell {
+  min-height: 8px;
+  border-radius: 3px;
 }
 
 .task-done-history {

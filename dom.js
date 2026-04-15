@@ -60,6 +60,7 @@ export const dom = {
   tasksEmptyStateElement: document.getElementById("tasks-empty-state"),
   taskDonePanelElement: document.getElementById("task-done-panel"),
   taskDoneCountElement: document.getElementById("task-done-count"),
+  taskDoneSummaryHeatmapElement: document.getElementById("task-done-summary-heatmap"),
   taskDoneHistoryCountElement: document.getElementById("task-done-history-count"),
   taskDoneHeatmapElement: document.getElementById("task-done-heatmap"),
   taskDoneListElement: document.getElementById("task-done-list"),
