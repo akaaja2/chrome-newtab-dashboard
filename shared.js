@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = {
   links: "dashboard.links",
+  dashboards: "dashboard.dashboards",
   tasks: "dashboard.tasks",
   note: "dashboard.note",
   dailyEarnings: "dashboard.dailyEarnings",
@@ -62,6 +63,7 @@ export const DASHBOARD_CARD_ORDER = [
   "pomodoro-card",
   "quotes-card",
   "links-card",
+  "dashboards-card",
   "earnings-card",
   "todo-card",
   "notes-card",
@@ -76,7 +78,7 @@ export const storageArea =
 
 if (!storageArea) {
   console.warn(
-    "New Tab Dashboard: chrome.storage.local is not available. Saved links, earnings, tasks, notes, backgrounds, layout, and Pomodoro state will not persist after reload.",
+    "New Tab Dashboard: chrome.storage.local is not available. Saved links, dashboards, earnings, tasks, notes, backgrounds, layout, and Pomodoro state will not persist after reload.",
   );
 }
 
@@ -230,6 +232,35 @@ export function formatDisplayUrl(url) {
   } catch {
     return url;
   }
+}
+
+export function getFileNameFromUrlOrPath(value) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return "";
+  }
+
+  try {
+    const parsed = new URL(rawValue);
+
+    if (parsed.protocol !== "file:") {
+      return "";
+    }
+
+    const lastSegment = parsed.pathname.split("/").filter(Boolean).pop();
+
+    return lastSegment ? decodeURIComponent(lastSegment) : "";
+  } catch {
+    const segments = rawValue.split(/[\\/]/).filter(Boolean);
+    const lastSegment = segments.pop() || "";
+
+    return lastSegment ? lastSegment.replace(/^file:\/*/i, "") : "";
+  }
+}
+
+export function stripFileExtension(fileName) {
+  return String(fileName || "").replace(/\.(html?|xhtml)$/i, "");
 }
 
 export function getTodayKey(date = new Date()) {

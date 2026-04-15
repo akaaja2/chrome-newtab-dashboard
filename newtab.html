@@ -391,6 +391,131 @@
         </section>
 
         <section
+          class="card dashboards-card dashboard-card dashboard-card--full"
+          id="dashboards-card"
+          data-dashboard-card-id="dashboards-card"
+          aria-labelledby="dashboards-heading"
+        >
+          <div class="card-heading dashboard-card__header">
+            <div>
+              <h2 id="dashboards-heading">Dashboards</h2>
+              <p class="card-subtitle">
+                Save local HTML dashboards and open them from compact cards.
+              </p>
+            </div>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="dashboards-card-body"
+                aria-expanded="true"
+                aria-label="Minimise dashboards card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Dashboards card to top"
+                title="Pin card to top"
+              >
+                Pin
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Dashboards card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
+          </div>
+          <div
+            class="dashboards-card__minimized-view links-card__minimized-view"
+            id="dashboards-minimized-view"
+            data-dashboards-minimized-view
+            hidden
+          >
+            <div class="links-card__minimized-header dashboards-card__minimized-header">
+              <p class="links-card__minimized-label dashboards-card__minimized-label">Saved dashboards</p>
+              <p class="links-card__minimized-hint dashboards-card__minimized-hint">
+                Local HTML dashboards stay visible while the form is tucked away.
+              </p>
+            </div>
+            <div
+              class="link-grid link-grid--compact"
+              id="dashboards-minimized-grid"
+              aria-label="Saved dashboards"
+            ></div>
+          </div>
+          <div class="dashboard-card__body" id="dashboards-card-body" data-dashboard-card-body>
+            <div class="link-results" data-dashboards-results>
+              <p class="empty-state" id="dashboards-empty-state">
+                No saved dashboards yet. Add your first local HTML file using the form below.
+              </p>
+              <div class="link-grid" id="dashboards-grid" aria-label="Saved dashboards"></div>
+            </div>
+
+            <form class="link-form" id="dashboard-form" novalidate data-dashboards-form>
+              <div class="form-grid">
+                <label class="field" for="dashboard-title">
+                  <span class="field-label">Title</span>
+                  <input
+                    class="field-input"
+                    id="dashboard-title"
+                    name="title"
+                    type="text"
+                    maxlength="80"
+                    autocomplete="off"
+                    placeholder="Optional title"
+                  />
+                </label>
+
+                <label class="field" for="dashboard-url">
+                  <span class="field-label">Local path or file URL</span>
+                  <input
+                    class="field-input"
+                    id="dashboard-url"
+                    name="url"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="C:\\Users\\...\\dashboard.html or file:///C:/.../dashboard.html"
+                    required
+                  />
+                </label>
+              </div>
+
+              <p class="link-form__hint">
+                The title is optional. If you leave it blank, the dashboard title will be read from the HTML file when possible, otherwise the file name is used.
+              </p>
+
+              <div class="form-actions">
+                <button class="button button--primary" id="dashboard-submit" type="submit">
+                  Add dashboard
+                </button>
+                <button
+                  class="button button--secondary"
+                  id="dashboard-cancel"
+                  type="button"
+                  hidden
+                >
+                  Cancel edit
+                </button>
+                <p class="form-message" id="dashboard-message" role="status" aria-live="polite"></p>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section
           class="card earnings-card dashboard-card dashboard-card--full"
           id="earnings-card"
           data-dashboard-card-id="earnings-card"
@@ -973,6 +1098,9 @@
                 <div class="settings-actions" aria-label="Reset dashboard data">
                   <button class="settings-action" type="button" data-reset-action="links">
                     Reset favourite links
+                  </button>
+                  <button class="settings-action" type="button" data-reset-action="dashboards">
+                    Reset dashboards
                   </button>
                   <button class="settings-action" type="button" data-reset-action="tasks">
                     Reset to-do list

@@ -837,7 +837,8 @@ body[data-card-surface="opaque"] {
   color: #667085;
 }
 
-.links-card {
+.links-card,
+.dashboards-card {
   display: grid;
   gap: 20px;
 }
@@ -874,6 +875,12 @@ body[data-card-surface="opaque"] {
   border-radius: 20px;
   border: 1px solid rgba(214, 219, 226, 0.95);
   background: rgba(248, 250, 252, 0.82);
+}
+
+.link-form__hint {
+  margin: 0;
+  color: #667085;
+  line-height: 1.5;
 }
 
 .form-grid {

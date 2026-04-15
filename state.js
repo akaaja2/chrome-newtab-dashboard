@@ -19,6 +19,10 @@ export const state = {
     items: [],
     editingId: null,
   },
+  dashboards: {
+    items: [],
+    editingId: null,
+  },
   dailyEarnings: {
     entries: [],
   },

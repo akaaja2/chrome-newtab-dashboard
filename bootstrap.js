@@ -1,5 +1,6 @@
 import { initDashboardLayout } from "./layout.js";
 import { initFavouriteLinks } from "./links.js";
+import { initDashboards } from "./dashboards.js";
 import { initDailyEarnings } from "./daily-earnings.js";
 import { initTodoList } from "./tasks.js";
 import { initNotes } from "./notes.js";
@@ -15,6 +16,7 @@ async function bootstrap() {
 
   await Promise.all([
     initFavouriteLinks(),
+    initDashboards(),
     initDailyEarnings(),
     initTodoList(),
     initNotes(),

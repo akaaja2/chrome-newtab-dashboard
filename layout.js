@@ -170,6 +170,16 @@ function updateDashboardDragClasses() {
       }
     }
 
+    if (cardId === "dashboards-card") {
+      const dashboardsMinimizedViewElement = cardElement.querySelector(
+        "[data-dashboards-minimized-view]",
+      );
+
+      if (dashboardsMinimizedViewElement) {
+        dashboardsMinimizedViewElement.hidden = !isMinimized;
+      }
+    }
+
     if (toggleButton) {
       const cardLabel = getDashboardCardLabel(cardElement);
       toggleButton.setAttribute("aria-expanded", String(!isMinimized));

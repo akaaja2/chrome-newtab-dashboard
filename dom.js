@@ -36,6 +36,17 @@ export const dom = {
   linkCancelButton: document.getElementById("link-cancel"),
   linkMessageElement: document.getElementById("link-message"),
 
+  dashboardsGridElement: document.getElementById("dashboards-grid"),
+  dashboardsMinimizedGridElement: document.getElementById("dashboards-minimized-grid"),
+  dashboardsMinimizedViewElement: document.getElementById("dashboards-minimized-view"),
+  dashboardsEmptyStateElement: document.getElementById("dashboards-empty-state"),
+  dashboardFormElement: document.getElementById("dashboard-form"),
+  dashboardTitleInput: document.getElementById("dashboard-title"),
+  dashboardUrlInput: document.getElementById("dashboard-url"),
+  dashboardSubmitButton: document.getElementById("dashboard-submit"),
+  dashboardCancelButton: document.getElementById("dashboard-cancel"),
+  dashboardMessageElement: document.getElementById("dashboard-message"),
+
   earningsFormElement: document.getElementById("earnings-form"),
   earningsAmountInput: document.getElementById("earnings-amount"),
   earningsCurrencySelect: document.getElementById("earnings-currency"),

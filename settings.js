@@ -1,6 +1,7 @@
 import { dom } from "./dom.js";
 import { setStatus } from "./shared.js";
 import { resetFavouriteLinks } from "./links.js";
+import { resetDashboards } from "./dashboards.js";
 import { resetTodoList } from "./tasks.js";
 import { clearNotes } from "./notes.js";
 import { resetBackground } from "./backgrounds.js";
@@ -29,6 +30,14 @@ async function handleSettingsAction(action) {
       const saved = await resetFavouriteLinks();
       setSettingsStatus(
         saved ? "Favourite links reset." : "Favourite links reset locally only.",
+        saved ? "saved" : "error",
+      );
+    }
+  } else if (action === "dashboards") {
+    if (confirmResetAction("dashboards")) {
+      const saved = await resetDashboards();
+      setSettingsStatus(
+        saved ? "Dashboards reset." : "Dashboards reset locally only.",
         saved ? "saved" : "error",
       );
     }
