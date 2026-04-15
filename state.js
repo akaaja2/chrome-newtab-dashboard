@@ -11,6 +11,7 @@ export const state = {
     todoListenersBound: false,
     pomodoroListenersBound: false,
     pomodoroTickIntervalId: null,
+    quotesListenersBound: false,
     dashboardLayoutListenersBound: false,
     dailyEarningsListenersBound: false,
   },
@@ -44,6 +45,10 @@ export const state = {
     lastDateKey: getTodayKey(),
     dragDepth: 0,
     isDragOver: false,
+  },
+  quotes: {
+    currentIndex: 0,
+    rotationIntervalId: null,
   },
   background: {
     selectedId: DEFAULT_BACKGROUND_ID,

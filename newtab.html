@@ -200,6 +200,76 @@
         </article>
 
         <section
+          class="card quotes-card dashboard-card dashboard-card--full"
+          id="quotes-card"
+          data-dashboard-card-id="quotes-card"
+          aria-labelledby="quotes-heading"
+        >
+          <div class="card-heading dashboard-card__header">
+            <div>
+              <h2 id="quotes-heading">Motivational Quotes</h2>
+              <p class="card-subtitle">
+                Fresh motivation rotates in automatically to keep the day moving.
+              </p>
+            </div>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="quotes-card-body"
+                aria-expanded="true"
+                aria-label="Minimise motivational quotes card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Motivational Quotes card to top"
+                title="Pin card to top"
+              >
+                Pin
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Motivational Quotes card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
+          </div>
+          <div class="dashboard-card__body" id="quotes-card-body" data-dashboard-card-body>
+            <div class="quotes-card__content">
+              <p class="quotes-card__eyebrow">Motivation</p>
+              <blockquote class="quotes-card__quote">
+                <p id="quotes-text">Start where you are. Momentum will meet you there.</p>
+              </blockquote>
+              <div class="quotes-card__footer">
+                <p class="quotes-card__source" id="quotes-author">Daily reminder</p>
+                <p class="quotes-card__counter" id="quotes-counter">Quote 1 of 8</p>
+              </div>
+            </div>
+            <div class="quotes-card__actions">
+              <p class="empty-state quotes-card__hint">
+                A new quote appears every 15 seconds.
+              </p>
+              <button class="button button--secondary button--compact" id="quotes-next" type="button">
+                Next quote
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section
           class="card links-card dashboard-card dashboard-card--full"
           id="links-card"
           data-dashboard-card-id="links-card"

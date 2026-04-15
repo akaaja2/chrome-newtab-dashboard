@@ -2,6 +2,12 @@ export const dom = {
   clockTimeElement: document.getElementById("clock-time"),
   clockDateElement: document.getElementById("clock-date"),
 
+  quotesCardElement: document.querySelector(".quotes-card"),
+  quotesTextElement: document.getElementById("quotes-text"),
+  quotesAuthorElement: document.getElementById("quotes-author"),
+  quotesCounterElement: document.getElementById("quotes-counter"),
+  quotesNextButton: document.getElementById("quotes-next"),
+
   pomodoroCardElement: document.querySelector(".pomodoro-card"),
   pomodoroModeButtons: Array.from(document.querySelectorAll("[data-pomodoro-mode]")),
   pomodoroCurrentModeElement: document.getElementById("pomodoro-current-mode"),

@@ -3,6 +3,7 @@ import {
   createId,
   escapeHtml,
   DEFAULT_TASK_PRIORITY_ID,
+  getTodayKey,
   readStoredValue,
   setStatus,
   TASK_PRIORITY_OPTIONS,
@@ -26,6 +27,25 @@ function normalizeSubtask(subtask) {
     id: typeof subtask.id === "string" && subtask.id ? subtask.id : createId("subtask"),
     text,
     completed: Boolean(subtask.completed),
+  };
+}
+
+function normalizeCompletionHistoryEntry(entry) {
+  const rawDateValue = entry?.dateKey ?? entry?.completedAt ?? entry?.date ?? entry?.timestamp;
+  const date = rawDateValue instanceof Date ? rawDateValue : rawDateValue ? new Date(rawDateValue) : null;
+  const dateKey =
+    String(entry?.dateKey || "").trim() ||
+    (date && !Number.isNaN(date.getTime()) ? getTodayKey(date) : "");
+
+  if (!dateKey) {
+    return null;
+  }
+
+  return {
+    id: typeof entry?.id === "string" && entry.id ? entry.id : createId("task-completion"),
+    taskId: typeof entry?.taskId === "string" ? entry.taskId : "",
+    taskText: String(entry?.taskText || "").trim(),
+    dateKey,
   };
 }
 
@@ -77,16 +97,38 @@ function splitTasksByCompletion(taskItems) {
 
 function normalizeTaskOrder(taskItems) {
   const normalizedTasks = Array.isArray(taskItems) ? taskItems.map(normalizeTask).filter(Boolean) : [];
-  return [...splitTasksByCompletion(normalizedTasks).activeTasks, ...splitTasksByCompletion(normalizedTasks).doneTasks];
+  const { activeTasks, doneTasks } = splitTasksByCompletion(normalizedTasks);
+  return [...activeTasks, ...doneTasks];
 }
 
 async function loadSavedTasks() {
   const storedTasks = await readStoredValue(STORAGE_KEYS.tasks, []);
-  state.tasks.items = normalizeTaskOrder(storedTasks);
+
+  if (Array.isArray(storedTasks)) {
+    state.tasks.items = normalizeTaskOrder(storedTasks);
+    state.tasks.completionHistory = [];
+    return;
+  }
+
+  if (storedTasks && typeof storedTasks === "object") {
+    state.tasks.items = normalizeTaskOrder(storedTasks.items ?? storedTasks.tasks ?? []);
+    state.tasks.completionHistory = Array.isArray(storedTasks.completionHistory)
+      ? storedTasks.completionHistory.map(normalizeCompletionHistoryEntry).filter(Boolean)
+      : Array.isArray(storedTasks.history)
+        ? storedTasks.history.map(normalizeCompletionHistoryEntry).filter(Boolean)
+        : [];
+    return;
+  }
+
+  state.tasks.items = [];
+  state.tasks.completionHistory = [];
 }
 
 async function persistTasks() {
-  return writeStoredValue(STORAGE_KEYS.tasks, state.tasks.items);
+  return writeStoredValue(STORAGE_KEYS.tasks, {
+    items: state.tasks.items,
+    completionHistory: state.tasks.completionHistory,
+  });
 }
 
 function resetTaskForm(clearMessage = false) {
@@ -125,6 +167,112 @@ function getNextTaskPriority(priorityId) {
   }
 
   return TASK_PRIORITY_OPTIONS[(currentIndex + 1) % TASK_PRIORITY_OPTIONS.length].id;
+}
+
+function getDateFromKey(dateKey) {
+  const [year, month, day] = String(dateKey).split("-").map((part) => Number(part));
+
+  if (!year || !month || !day) {
+    return null;
+  }
+
+  const date = new Date(year, month - 1, day);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatHistoryDateLabel(dateKey) {
+  const date = getDateFromKey(dateKey);
+
+  if (!date) {
+    return dateKey;
+  }
+
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+}
+
+function buildTaskCompletionHeatmapDays(historyItems, windowSize = 30) {
+  const countsByDate = new Map();
+
+  for (const entry of historyItems) {
+    countsByDate.set(entry.dateKey, (countsByDate.get(entry.dateKey) || 0) + 1);
+  }
+
+  const days = [];
+
+  for (let offset = windowSize - 1; offset >= 0; offset -= 1) {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - offset);
+    const dateKey = getTodayKey(date);
+
+    days.push({
+      dateKey,
+      dateLabel: formatHistoryDateLabel(dateKey),
+      count: countsByDate.get(dateKey) || 0,
+    });
+  }
+
+  return days;
+}
+
+function getHeatmapLevel(count, maxCount) {
+  if (count <= 0) {
+    return 0;
+  }
+
+  if (maxCount <= 1) {
+    return 1;
+  }
+
+  const ratio = count / maxCount;
+
+  if (ratio < 0.25) {
+    return 1;
+  }
+
+  if (ratio < 0.5) {
+    return 2;
+  }
+
+  if (ratio < 0.75) {
+    return 3;
+  }
+
+  return 4;
+}
+
+function renderTaskCompletionHeatmapMarkup(historyItems) {
+  if (!dom.taskDoneHeatmapElement) {
+    return;
+  }
+
+  const days = buildTaskCompletionHeatmapDays(historyItems);
+  const maxCount = days.reduce((max, day) => Math.max(max, day.count), 0);
+  const totalCompletions = days.reduce((sum, day) => sum + day.count, 0);
+
+  if (dom.taskDoneHistoryCountElement) {
+    dom.taskDoneHistoryCountElement.textContent = `${totalCompletions} completion${
+      totalCompletions === 1 ? "" : "s"
+    }`;
+  }
+
+  dom.taskDoneHeatmapElement.innerHTML = days
+    .map((day) => {
+      const level = getHeatmapLevel(day.count, maxCount);
+      const completionLabel = day.count === 1 ? "1 completion" : `${day.count} completions`;
+
+      return `
+        <span
+          class="task-done-heatmap__cell task-done-heatmap__cell--level-${level}"
+          title="${escapeHtml(`${day.dateLabel}: ${completionLabel}`)}"
+          aria-label="${escapeHtml(`${day.dateLabel}: ${completionLabel}`)}"
+          data-date-key="${escapeHtml(day.dateKey)}"
+          data-completions="${day.count}"
+        ></span>
+      `;
+    })
+    .join("");
 }
 
 function getActiveTaskListFromPoint(clientX, clientY) {
@@ -343,9 +491,11 @@ function renderTasks() {
   }
 
   const { activeTasks, doneTasks } = splitTasksByCompletion(state.tasks.items);
+  const hasCompletionHistory = state.tasks.completionHistory.length > 0;
 
   renderTaskList(dom.taskListElement, activeTasks);
   renderTaskList(dom.taskDoneListElement, doneTasks, { isDoneList: true });
+  renderTaskCompletionHeatmapMarkup(state.tasks.completionHistory);
 
   if (activeTasks.length === 0) {
     dom.tasksEmptyStateElement.hidden = false;
@@ -357,11 +507,11 @@ function renderTasks() {
   }
 
   if (dom.taskDoneEmptyStateElement) {
-    dom.taskDoneEmptyStateElement.hidden = doneTasks.length > 0;
+    dom.taskDoneEmptyStateElement.hidden = doneTasks.length > 0 || hasCompletionHistory;
   }
 
   if (dom.taskDonePanelElement) {
-    dom.taskDonePanelElement.hidden = doneTasks.length === 0;
+    dom.taskDonePanelElement.hidden = doneTasks.length === 0 && !hasCompletionHistory;
   }
 
   if (dom.taskDoneCountElement) {
@@ -545,6 +695,7 @@ async function toggleTaskCompletion(taskId, completed) {
     return;
   }
 
+  const wasCompleted = task.completed;
   task.completed = completed;
   task.subtasks = Array.isArray(task.subtasks)
     ? task.subtasks.map((subtask) => ({
@@ -552,6 +703,18 @@ async function toggleTaskCompletion(taskId, completed) {
         completed,
       }))
     : [];
+
+  if (completed && !wasCompleted) {
+    state.tasks.completionHistory = [
+      ...state.tasks.completionHistory,
+      {
+        id: createId("task-completion"),
+        taskId: task.id,
+        taskText: task.text,
+        dateKey: getTodayKey(),
+      },
+    ];
+  }
 
   state.tasks.items = normalizeTaskOrder(state.tasks.items);
 
@@ -698,6 +861,7 @@ function handleTaskListClick(event) {
 
 export async function resetTodoList() {
   state.tasks.items = [];
+  state.tasks.completionHistory = [];
   clearTaskDragState();
   const saved = await persistTasks();
   renderTasks();

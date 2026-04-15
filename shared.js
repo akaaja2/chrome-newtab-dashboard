@@ -60,6 +60,7 @@ export const DEFAULT_TASK_PRIORITY_ID = "medium";
 export const DASHBOARD_CARD_ORDER = [
   "clock-card",
   "pomodoro-card",
+  "quotes-card",
   "links-card",
   "earnings-card",
   "todo-card",

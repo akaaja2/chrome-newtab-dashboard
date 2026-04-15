@@ -6,6 +6,7 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 
 - Live 24-hour clock and readable date
 - Pomodoro timer with work and break modes
+- Rotating motivational quotes
 - Drag a task onto the timer to start a focus session
 - Favourite links with add, edit, and delete actions
 - Daily earnings tracker with GBP totals and USD conversion
@@ -36,6 +37,7 @@ chrome-newtab-dashboard/
 |-- clock.js
 |-- dom.js
 |-- layout.js
+|-- quotes.js
 |-- links.js
 |-- daily-earnings.js
 |-- notes.js

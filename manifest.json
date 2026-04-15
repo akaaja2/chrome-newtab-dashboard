@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "New Tab Dashboard",
   "version": "1.0.0",
-  "description": "A clean custom new tab dashboard with clock, Pomodoro timer, links, daily earnings, tasks, notes, and backgrounds.",
+  "description": "A clean custom new tab dashboard with clock, Pomodoro timer, motivational quotes, links, daily earnings, tasks, notes, and backgrounds.",
   "permissions": ["storage"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"

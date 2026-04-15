@@ -3,6 +3,7 @@ import { initFavouriteLinks } from "./links.js";
 import { initDailyEarnings } from "./daily-earnings.js";
 import { initTodoList } from "./tasks.js";
 import { initNotes } from "./notes.js";
+import { initRotatingQuotes, stopRotatingQuotesTicker } from "./quotes.js";
 import { initPomodoro, startPomodoroTicker, stopPomodoroTicker } from "./pomodoro.js";
 import { initBackgrounds } from "./backgrounds.js";
 import { initCardSurface } from "./card-surface.js";
@@ -17,6 +18,7 @@ async function bootstrap() {
     initDailyEarnings(),
     initTodoList(),
     initNotes(),
+    initRotatingQuotes(),
     initPomodoro(),
     initBackgrounds(),
     initCardSurface(),
@@ -25,6 +27,7 @@ async function bootstrap() {
 
   startClockTicker();
   startPomodoroTicker();
+  window.addEventListener("beforeunload", stopRotatingQuotesTicker);
   window.addEventListener("beforeunload", stopPomodoroTicker);
 }
 
