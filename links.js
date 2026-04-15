@@ -77,6 +77,16 @@ function openLink(url) {
 }
 
 function getFaviconUrl(url) {
+  try {
+    const parsed = new URL(url);
+
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
   return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url)}&sz=64`;
 }
 
@@ -104,14 +114,20 @@ function createSavedLinkCard(link, compact = false) {
   faviconImage.loading = "lazy";
   faviconImage.decoding = "async";
   faviconImage.referrerPolicy = "no-referrer";
-  faviconImage.addEventListener("load", () => {
-    favicon.classList.add("has-image");
-  });
-  faviconImage.addEventListener("error", () => {
-    faviconImage.remove();
-  });
-  faviconImage.src = getFaviconUrl(link.url);
-  favicon.appendChild(faviconImage);
+  const faviconUrl = getFaviconUrl(link.url);
+
+  if (faviconUrl) {
+    faviconImage.addEventListener("load", () => {
+      favicon.classList.add("has-image");
+    });
+    faviconImage.addEventListener("error", () => {
+      faviconImage.remove();
+    });
+    faviconImage.src = faviconUrl;
+    favicon.appendChild(faviconImage);
+  } else {
+    favicon.classList.add("saved-link-card__favicon--file");
+  }
 
   const text = document.createElement("div");
   text.className = "saved-link-card__text";
@@ -225,7 +241,7 @@ async function handleLinkFormSubmit(event) {
 
   if (!url) {
     setLinkMessage(
-      "That URL does not look valid. Try something like https://example.com.",
+      "That link does not look valid. Try https://example.com, file:///C:/Users/.../file.pdf, or a local Windows path.",
       "error",
     );
     dom.linkUrlInput.focus();

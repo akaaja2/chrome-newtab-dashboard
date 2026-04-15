@@ -2,11 +2,13 @@ export const STORAGE_KEYS = {
   links: "dashboard.links",
   tasks: "dashboard.tasks",
   note: "dashboard.note",
+  dailyEarnings: "dashboard.dailyEarnings",
   background: "dashboard.background",
   cardSurface: "dashboard.cardSurface",
   pomodoro: "dashboard.pomodoro",
   cardOrder: "dashboard.cardOrder",
   cardMinimized: "dashboard.cardMinimized",
+  cardPinned: "dashboard.cardPinned",
 };
 
 export const CUSTOM_BACKGROUND_ID = "custom-image";
@@ -46,10 +48,20 @@ export const CARD_SURFACE_OPTIONS = [
 
 export const DEFAULT_CARD_SURFACE_ID = CARD_SURFACE_OPTIONS[0].id;
 
+export const TASK_PRIORITY_OPTIONS = [
+  { id: "urgent", label: "Urgent" },
+  { id: "important", label: "Important" },
+  { id: "medium", label: "Medium" },
+  { id: "low", label: "Low" },
+];
+
+export const DEFAULT_TASK_PRIORITY_ID = "medium";
+
 export const DASHBOARD_CARD_ORDER = [
   "clock-card",
   "pomodoro-card",
   "links-card",
+  "earnings-card",
   "todo-card",
   "notes-card",
   "background-card",
@@ -63,7 +75,7 @@ export const storageArea =
 
 if (!storageArea) {
   console.warn(
-    "New Tab Dashboard: chrome.storage.local is not available. Saved links, tasks, notes, backgrounds, layout, and Pomodoro state will not persist after reload.",
+    "New Tab Dashboard: chrome.storage.local is not available. Saved links, earnings, tasks, notes, backgrounds, layout, and Pomodoro state will not persist after reload.",
   );
 }
 
@@ -121,11 +133,68 @@ export function setStatus(element, message, type = "idle") {
   element.dataset.state = type;
 }
 
+function normalizeLocalFileUrl(inputValue) {
+  const rawValue = inputValue.trim();
+
+  if (!rawValue) {
+    return null;
+  }
+
+  if (rawValue.toLowerCase().startsWith("file://")) {
+    try {
+      const parsed = new URL(rawValue);
+
+      if (parsed.protocol === "file:") {
+        return parsed.href;
+      }
+    } catch {
+      try {
+        const parsed = new URL(encodeURI(rawValue));
+
+        if (parsed.protocol === "file:") {
+          return parsed.href;
+        }
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  const uncPath = rawValue.match(/^\\\\([^\\\/]+)[\\\/](.+)$/);
+  if (uncPath) {
+    const host = uncPath[1];
+    const pathSegments = uncPath[2]
+      .split(/[\\\/]+/)
+      .filter(Boolean)
+      .map((segment) => encodeURIComponent(segment));
+
+    return pathSegments.length > 0 ? `file://${host}/${pathSegments.join("/")}` : null;
+  }
+
+  const windowsPath = rawValue.match(/^([a-zA-Z]):[\\\/](.+)$/);
+  if (windowsPath) {
+    const driveLetter = windowsPath[1].toUpperCase();
+    const pathSegments = windowsPath[2]
+      .split(/[\\\/]+/)
+      .filter(Boolean)
+      .map((segment) => encodeURIComponent(segment));
+
+    return pathSegments.length > 0 ? `file:///${driveLetter}:/${pathSegments.join("/")}` : null;
+  }
+
+  return null;
+}
+
 export function normalizeUrl(inputValue) {
   const rawValue = inputValue.trim();
 
   if (!rawValue) {
     return null;
+  }
+
+  const localFileUrl = normalizeLocalFileUrl(rawValue);
+  if (localFileUrl) {
+    return localFileUrl;
   }
 
   const attempts = rawValue.includes("://")
@@ -136,7 +205,7 @@ export function normalizeUrl(inputValue) {
     try {
       const parsed = new URL(attempt);
 
-      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      if (parsed.protocol === "http:" || parsed.protocol === "https:" || parsed.protocol === "file:") {
         return parsed.href;
       }
     } catch {
@@ -149,7 +218,14 @@ export function normalizeUrl(inputValue) {
 
 export function formatDisplayUrl(url) {
   try {
-    return new URL(url).hostname.replace(/^www\./, "");
+    const parsed = new URL(url);
+
+    if (parsed.protocol === "file:") {
+      const lastSegment = parsed.pathname.split("/").filter(Boolean).pop();
+      return lastSegment ? decodeURIComponent(lastSegment) : "Local file";
+    }
+
+    return parsed.hostname.replace(/^www\./, "");
   } catch {
     return url;
   }

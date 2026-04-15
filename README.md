@@ -8,6 +8,8 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 - Pomodoro timer with work and break modes
 - Drag a task onto the timer to start a focus session
 - Favourite links with add, edit, and delete actions
+- Daily earnings tracker with GBP totals and USD conversion
+- Quick-launch tabs for UserTesting and Prolific
 - To-do list with completion and removal controls
 - Quick notes with autosave
 - Built-in geometric and local image backgrounds
@@ -35,6 +37,7 @@ chrome-newtab-dashboard/
 |-- dom.js
 |-- layout.js
 |-- links.js
+|-- daily-earnings.js
 |-- notes.js
 |-- backgrounds.js
 |-- card-surface.js
@@ -77,3 +80,4 @@ chrome-newtab-dashboard/
 
 - The project is intentionally dependency-free.
 - Uploaded custom background images are stored locally in `chrome.storage.local`, which is suitable for a small MVP but not ideal for large or long-term image storage.
+- Favourite links accept normal web URLs as well as local file links such as `file:///C:/Users/.../Downloads/report.pdf`.

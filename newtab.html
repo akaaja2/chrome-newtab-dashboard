@@ -32,6 +32,16 @@
                 Minimise
               </button>
               <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Clock card to top"
+                title="Pin card to top"
+              >
+                Pin
+              </button>
+              <button
                 class="dashboard-card__drag-handle"
                 type="button"
                 draggable="true"
@@ -85,6 +95,16 @@
                 title="Minimise card"
               >
                 Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Pomodoro card to top"
+                title="Pin card to top"
+              >
+                Pin
               </button>
               <button
                 class="dashboard-card__drag-handle"
@@ -205,6 +225,16 @@
                 Minimise
               </button>
               <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Favourite Links card to top"
+                title="Pin card to top"
+              >
+                Pin
+              </button>
+              <button
                 class="dashboard-card__drag-handle"
                 type="button"
                 draggable="true"
@@ -266,7 +296,7 @@
                     type="url"
                     inputmode="url"
                     autocomplete="off"
-                    placeholder="https://example.com"
+                    placeholder="https://example.com or C:\\Users\\...\\file.pdf"
                     required
                   />
                 </label>
@@ -287,6 +317,157 @@
                 <p class="form-message" id="link-message" role="status" aria-live="polite"></p>
               </div>
             </form>
+          </div>
+        </section>
+
+        <section
+          class="card earnings-card dashboard-card dashboard-card--full"
+          id="earnings-card"
+          data-dashboard-card-id="earnings-card"
+          aria-labelledby="earnings-heading"
+        >
+          <div class="card-heading dashboard-card__header">
+            <div>
+              <h2 id="earnings-heading">Daily Earnings</h2>
+              <p class="card-subtitle">
+                Save each payment in GBP. USD entries are converted at a fixed 0.75 rate.
+              </p>
+            </div>
+            <div class="dashboard-card__controls">
+              <button
+                class="dashboard-card__toggle"
+                type="button"
+                data-dashboard-card-toggle
+                aria-controls="earnings-card-body"
+                aria-expanded="true"
+                aria-label="Minimise daily earnings card"
+                title="Minimise card"
+              >
+                Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Daily Earnings card to top"
+                title="Pin card to top"
+              >
+                Pin
+              </button>
+              <button
+                class="dashboard-card__drag-handle"
+                type="button"
+                draggable="true"
+                data-dashboard-card-handle
+                aria-label="Drag Daily Earnings card"
+                title="Drag to reorder"
+              >
+                <span aria-hidden="true">|||</span>
+                <span>Drag</span>
+              </button>
+            </div>
+          </div>
+          <div class="dashboard-card__body" id="earnings-card-body" data-dashboard-card-body>
+            <div class="earnings-summary" aria-label="Earnings totals">
+              <div class="earnings-summary__item earnings-summary__item--today">
+                <span class="earnings-summary__label">Today</span>
+                <strong class="earnings-summary__value" id="earnings-today-total">&pound;0.00</strong>
+              </div>
+              <div class="earnings-summary__item">
+                <span class="earnings-summary__label">Yesterday</span>
+                <strong class="earnings-summary__value" id="earnings-yesterday-total">&pound;0.00</strong>
+              </div>
+              <div class="earnings-summary__item earnings-summary__item--chart">
+                <span class="earnings-summary__label">Last 7 days</span>
+                <div class="earnings-summary__metric-row">
+                  <strong class="earnings-summary__value" id="earnings-week-total">&pound;0.00</strong>
+                  <div
+                    class="earnings-summary__mini-chart"
+                    id="earnings-week-mini-chart"
+                    aria-label="Daily earnings chart for the last 7 days"
+                  ></div>
+                </div>
+              </div>
+              <div class="earnings-summary__item earnings-summary__item--chart">
+                <span class="earnings-summary__label">Last 30 days</span>
+                <div class="earnings-summary__metric-row">
+                  <strong class="earnings-summary__value" id="earnings-month-total">&pound;0.00</strong>
+                  <div
+                    class="earnings-summary__mini-chart"
+                    id="earnings-month-mini-chart"
+                    aria-label="Daily earnings chart for the last 30 days"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <form class="earnings-form" id="earnings-form" novalidate>
+              <div class="form-grid earnings-form__grid">
+                <label class="field" for="earnings-amount">
+                  <span class="field-label">Amount</span>
+                  <input
+                    class="field-input"
+                    id="earnings-amount"
+                    name="amount"
+                    type="number"
+                    inputmode="decimal"
+                    min="0.01"
+                    step="0.01"
+                    autocomplete="off"
+                    placeholder="25.00"
+                    required
+                  />
+                </label>
+
+                <label class="field" for="earnings-currency">
+                  <span class="field-label">Currency</span>
+                  <select class="field-input" id="earnings-currency" name="currency">
+                    <option value="GBP" selected>GBP</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="earnings-form__actions">
+                <button class="button button--primary" id="earnings-submit" type="submit">
+                  Add amount
+                </button>
+                <p class="form-message" id="earnings-message" role="status" aria-live="polite">
+                  Add one or more earnings entries throughout the day.
+                </p>
+              </div>
+            </form>
+
+            <section class="earnings-history" aria-labelledby="earnings-history-heading">
+              <div class="card-heading">
+                <div>
+                  <h3 id="earnings-history-heading">Recent entries</h3>
+                  <p class="card-subtitle">
+                    Multiple entries are stored and converted into GBP when saved.
+                  </p>
+                </div>
+              </div>
+              <p class="empty-state" id="earnings-empty-state">
+                No earnings added yet. Save your first amount above.
+              </p>
+              <ul class="earnings-list" id="earnings-list" aria-label="Recent earnings entries"></ul>
+            </section>
+
+            <section class="earnings-links" aria-labelledby="earnings-links-heading">
+              <div class="card-heading">
+                <div>
+                  <h3 id="earnings-links-heading">Quick links</h3>
+                  <p class="card-subtitle">
+                    Open all three work tabs at once or launch them individually.
+                  </p>
+                </div>
+                <button class="button button--secondary button--compact" id="earnings-open-all" type="button">
+                  Open all
+                </button>
+              </div>
+              <div class="earnings-links-grid" id="earnings-links-grid" aria-label="Quick links to work tabs"></div>
+            </section>
           </div>
         </section>
 
@@ -316,6 +497,16 @@
                 Minimise
               </button>
               <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin To-Do List card to top"
+                title="Pin card to top"
+              >
+                Pin
+              </button>
+              <button
                 class="dashboard-card__drag-handle"
                 type="button"
                 draggable="true"
@@ -330,19 +521,31 @@
           </div>
           <div class="dashboard-card__body" id="todo-card-body" data-dashboard-card-body>
             <form class="task-form" id="task-form" novalidate>
-              <label class="field" for="task-input">
-                <span class="field-label">New task</span>
-                <input
-                  class="field-input"
-                  id="task-input"
-                  name="task"
-                  type="text"
-                  maxlength="140"
-                  autocomplete="off"
-                  placeholder="Add a task and press Enter"
-                  required
-                />
-              </label>
+              <div class="task-form__row">
+                <label class="field task-form__priority-field" for="task-priority">
+                  <span class="field-label">Tag</span>
+                  <select class="field-input task-priority-select" id="task-priority" name="priority">
+                    <option value="urgent">Urgent</option>
+                    <option value="important">Important</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </label>
+
+                <label class="field task-form__task-field" for="task-input">
+                  <span class="field-label">New task</span>
+                  <input
+                    class="field-input"
+                    id="task-input"
+                    name="task"
+                    type="text"
+                    maxlength="140"
+                    autocomplete="off"
+                    placeholder="Add a task and press Enter"
+                    required
+                  />
+                </label>
+              </div>
               <p class="form-message" id="task-message" role="status" aria-live="polite"></p>
             </form>
 
@@ -355,6 +558,47 @@
                 No tasks yet. Add one above to get started.
               </p>
               <ul class="task-list" id="task-list" aria-label="Saved tasks"></ul>
+              <details class="task-done-panel" id="task-done-panel">
+                  <summary class="task-done-summary">
+                    <span class="task-done-summary__title">Done</span>
+                    <span class="task-done-summary__count" id="task-done-count">0</span>
+                  </summary>
+                  <div class="task-done-panel__body">
+                    <section class="task-done-history" aria-labelledby="task-done-history-heading">
+                      <div class="task-done-history__header">
+                        <div>
+                          <p class="task-done-history__eyebrow" id="task-done-history-heading">
+                            Past 30 days
+                          </p>
+                          <p class="task-done-history__subtitle">
+                            Darker squares mean more tasks were completed that day.
+                          </p>
+                        </div>
+                        <p class="task-done-history__stat" id="task-done-history-count">
+                          0 completions
+                        </p>
+                      </div>
+                      <div
+                        class="task-done-heatmap"
+                        id="task-done-heatmap"
+                        aria-label="Task completion heat map for the past 30 days"
+                      ></div>
+                      <div class="task-done-heatmap__legend" aria-hidden="true">
+                        <span class="task-done-heatmap__legend-label">Less</span>
+                        <span class="task-done-heatmap__legend-swatch task-done-heatmap__legend-swatch--level-0"></span>
+                        <span class="task-done-heatmap__legend-swatch task-done-heatmap__legend-swatch--level-1"></span>
+                        <span class="task-done-heatmap__legend-swatch task-done-heatmap__legend-swatch--level-2"></span>
+                        <span class="task-done-heatmap__legend-swatch task-done-heatmap__legend-swatch--level-3"></span>
+                        <span class="task-done-heatmap__legend-swatch task-done-heatmap__legend-swatch--level-4"></span>
+                        <span class="task-done-heatmap__legend-label">More</span>
+                      </div>
+                    </section>
+                    <p class="empty-state task-done-empty-state" id="tasks-done-empty-state">
+                      No completed tasks yet.
+                    </p>
+                    <ul class="task-list task-list--done" id="task-done-list" aria-label="Completed tasks"></ul>
+                  </div>
+              </details>
             </div>
           </div>
         </article>
@@ -383,6 +627,16 @@
                 title="Minimise card"
               >
                 Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Notes card to top"
+                title="Pin card to top"
+              >
+                Pin
               </button>
               <button
                 class="dashboard-card__drag-handle"
@@ -444,6 +698,16 @@
                 title="Minimise card"
               >
                 Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Background card to top"
+                title="Pin card to top"
+              >
+                Pin
               </button>
               <button
                 class="dashboard-card__drag-handle"
@@ -593,6 +857,16 @@
                 title="Minimise card"
               >
                 Minimise
+              </button>
+              <button
+                class="dashboard-card__pin"
+                type="button"
+                data-dashboard-card-pin
+                aria-pressed="false"
+                aria-label="Pin Settings card to top"
+                title="Pin card to top"
+              >
+                Pin
               </button>
               <button
                 class="dashboard-card__drag-handle"

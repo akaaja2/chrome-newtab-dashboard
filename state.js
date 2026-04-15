@@ -12,13 +12,21 @@ export const state = {
     pomodoroListenersBound: false,
     pomodoroTickIntervalId: null,
     dashboardLayoutListenersBound: false,
+    dailyEarningsListenersBound: false,
   },
   links: {
     items: [],
     editingId: null,
   },
+  dailyEarnings: {
+    entries: [],
+  },
   tasks: {
     items: [],
+    completionHistory: [],
+    draggingTaskId: null,
+    dropTargetTaskId: null,
+    dropPosition: null,
   },
   note: {
     lastSavedContent: "",
@@ -47,6 +55,7 @@ export const state = {
   layout: {
     cardOrder: [...DASHBOARD_CARD_ORDER],
     minimizedCardIds: [],
+    pinnedCardIds: [],
     draggingCardId: null,
     dropTargetCardId: null,
     dropPosition: null,

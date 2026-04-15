@@ -1,32 +1,88 @@
 import { dom } from "./dom.js";
-import { createId, escapeHtml, readStoredValue, setStatus, writeStoredValue, STORAGE_KEYS } from "./shared.js";
+import {
+  createId,
+  escapeHtml,
+  DEFAULT_TASK_PRIORITY_ID,
+  readStoredValue,
+  setStatus,
+  TASK_PRIORITY_OPTIONS,
+  STORAGE_KEYS,
+  writeStoredValue,
+} from "./shared.js";
 import { state } from "./state.js";
 
 function setTaskMessage(message, type = "info") {
   setStatus(dom.taskMessageElement, message, type);
 }
 
+function normalizeSubtask(subtask) {
+  const text = String(subtask?.text || "").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  return {
+    id: typeof subtask.id === "string" && subtask.id ? subtask.id : createId("subtask"),
+    text,
+    completed: Boolean(subtask.completed),
+  };
+}
+
+function normalizeTaskPriority(priority) {
+  const candidate = String(priority || "").trim();
+
+  return TASK_PRIORITY_OPTIONS.some((option) => option.id === candidate)
+    ? candidate
+    : DEFAULT_TASK_PRIORITY_ID;
+}
+
+function normalizeTask(task) {
+  const text = String(task?.text || "").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  const subtasks = Array.isArray(task?.subtasks)
+    ? task.subtasks.map(normalizeSubtask).filter(Boolean)
+    : [];
+
+  return {
+    id: typeof task.id === "string" && task.id ? task.id : createId("task"),
+    text,
+    completed: Boolean(task.completed),
+    priority: normalizeTaskPriority(task?.priority),
+    subtasks,
+  };
+}
+
+function splitTasksByCompletion(taskItems) {
+  const activeTasks = [];
+  const doneTasks = [];
+
+  for (const task of taskItems) {
+    if (task.completed) {
+      doneTasks.push(task);
+    } else {
+      activeTasks.push(task);
+    }
+  }
+
+  return {
+    activeTasks,
+    doneTasks,
+  };
+}
+
+function normalizeTaskOrder(taskItems) {
+  const normalizedTasks = Array.isArray(taskItems) ? taskItems.map(normalizeTask).filter(Boolean) : [];
+  return [...splitTasksByCompletion(normalizedTasks).activeTasks, ...splitTasksByCompletion(normalizedTasks).doneTasks];
+}
+
 async function loadSavedTasks() {
   const storedTasks = await readStoredValue(STORAGE_KEYS.tasks, []);
-
-  state.tasks.items = Array.isArray(storedTasks)
-    ? storedTasks
-        .filter((task) => task && typeof task.id === "string")
-        .map((task) => {
-          const text = String(task.text || "").trim();
-
-          if (!text) {
-            return null;
-          }
-
-          return {
-            id: task.id,
-            text,
-            completed: Boolean(task.completed),
-          };
-        })
-        .filter(Boolean)
-    : [];
+  state.tasks.items = normalizeTaskOrder(storedTasks);
 }
 
 async function persistTasks() {
@@ -34,7 +90,9 @@ async function persistTasks() {
 }
 
 function resetTaskForm(clearMessage = false) {
-  dom.taskFormElement?.reset();
+  if (dom.taskInputElement) {
+    dom.taskInputElement.value = "";
+  }
 
   if (clearMessage) {
     setTaskMessage("");
@@ -43,49 +101,274 @@ function resetTaskForm(clearMessage = false) {
   dom.taskInputElement?.focus();
 }
 
+function getTaskLabelId(taskId) {
+  return `task-checkbox-${taskId}`;
+}
+
+function getSubtaskLabelId(taskId, subtaskId) {
+  return `subtask-checkbox-${taskId}-${subtaskId}`;
+}
+
+function getTaskPriorityLabel(priorityId) {
+  return (
+    TASK_PRIORITY_OPTIONS.find((option) => option.id === normalizeTaskPriority(priorityId))?.label ||
+    "Medium"
+  );
+}
+
+function getNextTaskPriority(priorityId) {
+  const normalizedPriority = normalizeTaskPriority(priorityId);
+  const currentIndex = TASK_PRIORITY_OPTIONS.findIndex((option) => option.id === normalizedPriority);
+
+  if (currentIndex === -1) {
+    return DEFAULT_TASK_PRIORITY_ID;
+  }
+
+  return TASK_PRIORITY_OPTIONS[(currentIndex + 1) % TASK_PRIORITY_OPTIONS.length].id;
+}
+
+function getActiveTaskListFromPoint(clientX, clientY) {
+  if (!dom.taskListElement) {
+    return null;
+  }
+
+  const hitElements = document.elementsFromPoint(clientX, clientY);
+
+  for (const hitElement of hitElements) {
+    if (!(hitElement instanceof Element)) {
+      continue;
+    }
+
+    const taskElement = hitElement.closest("[data-task-id]");
+
+    if (taskElement && dom.taskListElement.contains(taskElement)) {
+      return taskElement;
+    }
+  }
+
+  let closestTask = null;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  for (const taskElement of Array.from(dom.taskListElement.children)) {
+    if (!(taskElement instanceof HTMLElement)) {
+      continue;
+    }
+
+    const rect = taskElement.getBoundingClientRect();
+    const xDistance =
+      clientX < rect.left ? rect.left - clientX : clientX > rect.right ? clientX - rect.right : 0;
+    const yDistance =
+      clientY < rect.top ? rect.top - clientY : clientY > rect.bottom ? clientY - rect.bottom : 0;
+    const distance = xDistance * xDistance + yDistance * yDistance;
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestTask = taskElement;
+    }
+  }
+
+  return closestTask;
+}
+
+function getTaskDropPosition(taskElement, clientY) {
+  const rect = taskElement.getBoundingClientRect();
+  const middleY = rect.top + rect.height / 2;
+
+  return clientY < middleY ? "before" : "after";
+}
+
+function updateTaskDragClasses() {
+  if (!dom.taskListElement) {
+    return;
+  }
+
+  for (const taskElement of dom.taskListElement.children) {
+    if (!(taskElement instanceof HTMLElement)) {
+      continue;
+    }
+
+    const taskId = taskElement.dataset.taskId;
+    const isDragging = taskId === state.tasks.draggingTaskId;
+    const isDropTarget = taskId === state.tasks.dropTargetTaskId;
+
+    taskElement.classList.toggle("is-dragging", isDragging);
+    taskElement.classList.toggle("is-drop-target", isDropTarget);
+
+    if (isDropTarget && state.tasks.dropPosition) {
+      taskElement.dataset.dropPosition = state.tasks.dropPosition;
+    } else {
+      taskElement.removeAttribute("data-drop-position");
+    }
+  }
+}
+
+function clearTaskDragState() {
+  state.tasks.draggingTaskId = null;
+  state.tasks.dropTargetTaskId = null;
+  state.tasks.dropPosition = null;
+  updateTaskDragClasses();
+}
+
+function setTaskDropTarget(taskId, dropPosition) {
+  state.tasks.dropTargetTaskId = taskId;
+  state.tasks.dropPosition = dropPosition;
+  updateTaskDragClasses();
+}
+
+function renderSubtaskMarkup(task) {
+  if (!task.subtasks.length) {
+    return "";
+  }
+
+  const subtasksMarkup = task.subtasks
+    .map((subtask) => {
+      const subtaskCheckboxId = getSubtaskLabelId(task.id, subtask.id);
+
+      return `
+        <li class="task-subtask-item${subtask.completed ? " is-complete" : ""}" data-subtask-id="${escapeHtml(subtask.id)}">
+          <label class="task-subtask-label" for="${escapeHtml(subtaskCheckboxId)}">
+            <input
+              class="task-subtask-checkbox"
+              id="${escapeHtml(subtaskCheckboxId)}"
+              type="checkbox"
+              data-task-action="toggle-subtask"
+              data-parent-task-id="${escapeHtml(task.id)}"
+              data-subtask-id="${escapeHtml(subtask.id)}"
+              ${subtask.completed ? "checked" : ""}
+            />
+            <span class="task-subtask-text">${escapeHtml(subtask.text)}</span>
+          </label>
+          <div class="task-subtask-actions">
+            <button
+              class="task-subtask-delete"
+              type="button"
+              data-task-action="delete-subtask"
+              data-parent-task-id="${escapeHtml(task.id)}"
+              data-subtask-id="${escapeHtml(subtask.id)}"
+            >
+              Delete
+            </button>
+          </div>
+        </li>
+      `;
+    })
+    .join("");
+
+  return `
+    <ul class="task-subtask-list" aria-label="Subtasks for ${escapeHtml(task.text)}">
+      ${subtasksMarkup}
+    </ul>
+  `;
+}
+
+function renderTaskPriorityMarkup(task) {
+  const priorityId = normalizeTaskPriority(task.priority);
+  const priorityLabel = getTaskPriorityLabel(priorityId);
+
+  return `
+    <button
+      class="task-priority-badge task-priority-badge--${escapeHtml(priorityId)}"
+      type="button"
+      data-task-action="cycle-priority"
+      data-task-id="${escapeHtml(task.id)}"
+      aria-label="Change priority for ${escapeHtml(task.text)}"
+      title="Click to cycle priority"
+    >
+      ${escapeHtml(priorityLabel)}
+    </button>
+  `;
+}
+
+function createTaskMarkup(task) {
+  const taskCheckboxId = getTaskLabelId(task.id);
+
+  return `
+    <div class="task-item__main">
+      <input
+        class="task-checkbox"
+        id="${escapeHtml(taskCheckboxId)}"
+        type="checkbox"
+        data-task-action="toggle"
+        data-task-id="${escapeHtml(task.id)}"
+        ${task.completed ? "checked" : ""}
+      />
+      <label class="task-label" for="${escapeHtml(taskCheckboxId)}">
+        <span class="task-text">${escapeHtml(task.text)}</span>
+      </label>
+    </div>
+    <div class="task-item__actions">
+      ${renderTaskPriorityMarkup(task)}
+      <button
+        class="task-action-button task-action-button--subtask"
+        type="button"
+        data-task-action="add-subtask"
+        data-task-id="${escapeHtml(task.id)}"
+      >
+        Subtask
+      </button>
+      <button
+        class="task-delete"
+        type="button"
+        data-task-action="delete"
+        data-task-id="${escapeHtml(task.id)}"
+      >
+        Delete
+      </button>
+    </div>
+    ${renderSubtaskMarkup(task)}
+  `;
+}
+
+function renderTaskList(listElement, tasks, { isDoneList = false } = {}) {
+  if (!listElement) {
+    return;
+  }
+
+  listElement.innerHTML = "";
+
+  for (const task of tasks) {
+    const item = document.createElement("li");
+    item.className = task.completed ? "task-item is-complete task-item--done" : "task-item";
+    item.dataset.taskId = task.id;
+    item.draggable = !task.completed && !isDoneList;
+    item.setAttribute("aria-grabbed", "false");
+    item.innerHTML = createTaskMarkup(task);
+    listElement.appendChild(item);
+  }
+}
+
 function renderTasks() {
   if (!dom.taskListElement || !dom.tasksEmptyStateElement) {
     return;
   }
 
-  dom.taskListElement.innerHTML = "";
+  const { activeTasks, doneTasks } = splitTasksByCompletion(state.tasks.items);
 
-  if (state.tasks.items.length === 0) {
+  renderTaskList(dom.taskListElement, activeTasks);
+  renderTaskList(dom.taskDoneListElement, doneTasks, { isDoneList: true });
+
+  if (activeTasks.length === 0) {
     dom.tasksEmptyStateElement.hidden = false;
-    return;
+    dom.tasksEmptyStateElement.textContent = doneTasks.length
+      ? "No active tasks. Check the Done section below for completed items."
+      : "No tasks yet. Add one above to get started.";
+  } else {
+    dom.tasksEmptyStateElement.hidden = true;
   }
 
-  dom.tasksEmptyStateElement.hidden = true;
-
-  for (const task of state.tasks.items) {
-    const taskId = `task-checkbox-${task.id}`;
-    const item = document.createElement("li");
-    item.className = task.completed ? "task-item is-complete" : "task-item";
-    item.dataset.taskId = task.id;
-    item.draggable = true;
-    item.setAttribute("aria-grabbed", "false");
-
-    item.innerHTML = `
-      <div class="task-item__main">
-        <input
-          class="task-checkbox"
-          id="${escapeHtml(taskId)}"
-          type="checkbox"
-          data-task-action="toggle"
-          data-task-id="${escapeHtml(task.id)}"
-          ${task.completed ? "checked" : ""}
-        />
-        <label class="task-label" for="${escapeHtml(taskId)}">
-          <span class="task-text">${escapeHtml(task.text)}</span>
-        </label>
-      </div>
-      <button class="task-delete" type="button" data-task-action="delete" data-task-id="${escapeHtml(task.id)}">
-        Delete
-      </button>
-    `;
-
-    dom.taskListElement.appendChild(item);
+  if (dom.taskDoneEmptyStateElement) {
+    dom.taskDoneEmptyStateElement.hidden = doneTasks.length > 0;
   }
+
+  if (dom.taskDonePanelElement) {
+    dom.taskDonePanelElement.hidden = doneTasks.length === 0;
+  }
+
+  if (dom.taskDoneCountElement) {
+    dom.taskDoneCountElement.textContent = String(doneTasks.length);
+  }
+
+  updateTaskDragClasses();
 }
 
 export function getTaskFromDragData(dataTransfer) {
@@ -113,7 +396,7 @@ export function getTaskFromDragData(dataTransfer) {
   return String(rawPayload).trim() || null;
 }
 
-// Each task is draggable so the user can launch it directly from the to-do list.
+// Each active task is draggable so the user can reorder the to-do list.
 function handleTaskListDragStart(event) {
   const taskItem = event.target.closest("[data-task-id]");
 
@@ -123,30 +406,101 @@ function handleTaskListDragStart(event) {
 
   const task = state.tasks.items.find((item) => item.id === taskItem.dataset.taskId);
 
-  if (!task || !event.dataTransfer) {
+  if (!task || task.completed || !event.dataTransfer) {
     return;
   }
 
-  event.dataTransfer.effectAllowed = "copy";
+  state.tasks.draggingTaskId = task.id;
+  state.tasks.dropTargetTaskId = null;
+  state.tasks.dropPosition = null;
+  event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData(
     "application/x-newtab-task",
     JSON.stringify({ id: task.id, text: task.text }),
   );
   event.dataTransfer.setData("text/plain", task.text);
 
-  taskItem.classList.add("is-dragging");
-  taskItem.setAttribute("aria-grabbed", "true");
+  updateTaskDragClasses();
 }
 
-function handleTaskListDragEnd(event) {
-  const taskItem = event.target.closest("[data-task-id]");
-
-  if (!taskItem) {
+function handleTaskListDragOver(event) {
+  if (!dom.taskListElement || !state.tasks.draggingTaskId || !event.dataTransfer) {
     return;
   }
 
-  taskItem.classList.remove("is-dragging");
-  taskItem.setAttribute("aria-grabbed", "false");
+  const dragTypes = Array.from(event.dataTransfer.types || []);
+
+  if (!dragTypes.includes("application/x-newtab-task") && !dragTypes.includes("text/plain")) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const taskItem = getActiveTaskListFromPoint(event.clientX, event.clientY);
+
+  if (!taskItem) {
+    state.tasks.dropTargetTaskId = null;
+    state.tasks.dropPosition = null;
+    updateTaskDragClasses();
+    return;
+  }
+
+  const taskId = taskItem.dataset.taskId;
+
+  if (!taskId) {
+    return;
+  }
+
+  const dropPosition = getTaskDropPosition(taskItem, event.clientY);
+  event.dataTransfer.dropEffect = "move";
+
+  if (state.tasks.dropTargetTaskId === taskId && state.tasks.dropPosition === dropPosition) {
+    return;
+  }
+
+  setTaskDropTarget(taskId, dropPosition);
+}
+
+async function handleTaskListDrop(event) {
+  event.preventDefault();
+
+  const movingTaskId = state.tasks.draggingTaskId;
+  const targetTask = getActiveTaskListFromPoint(event.clientX, event.clientY);
+  const targetTaskId = targetTask ? targetTask.dataset.taskId || "" : "";
+  const dropPosition = targetTask ? getTaskDropPosition(targetTask, event.clientY) : "after";
+
+  clearTaskDragState();
+
+  if (!movingTaskId || !targetTaskId || movingTaskId === targetTaskId) {
+    return;
+  }
+
+  const { activeTasks, doneTasks } = splitTasksByCompletion(state.tasks.items);
+  const movingIndex = activeTasks.findIndex((task) => task.id === movingTaskId);
+  const targetIndex = activeTasks.findIndex((task) => task.id === targetTaskId);
+
+  if (movingIndex === -1 || targetIndex === -1) {
+    return;
+  }
+
+  const reorderedActiveTasks = [...activeTasks];
+  const [movingTask] = reorderedActiveTasks.splice(movingIndex, 1);
+  const adjustedTargetIndex = reorderedActiveTasks.findIndex((task) => task.id === targetTaskId);
+
+  if (adjustedTargetIndex === -1) {
+    return;
+  }
+
+  const insertIndex = dropPosition === "before" ? adjustedTargetIndex : adjustedTargetIndex + 1;
+  reorderedActiveTasks.splice(insertIndex, 0, movingTask);
+
+  state.tasks.items = [...reorderedActiveTasks, ...doneTasks];
+  await persistTasks();
+  renderTasks();
+}
+
+function handleTaskListDragEnd() {
+  clearTaskDragState();
 }
 
 async function handleTaskFormSubmit(event) {
@@ -157,6 +511,7 @@ async function handleTaskFormSubmit(event) {
   }
 
   const text = dom.taskInputElement.value.trim();
+  const priority = normalizeTaskPriority(dom.taskPrioritySelectElement?.value);
 
   if (!text) {
     setTaskMessage("Please enter a task before adding it.", "error");
@@ -164,14 +519,18 @@ async function handleTaskFormSubmit(event) {
     return;
   }
 
-  state.tasks.items = [
+  const nextTasks = [
     {
       id: createId("task"),
       text,
       completed: false,
+      priority,
+      subtasks: [],
     },
     ...state.tasks.items,
   ];
+
+  state.tasks.items = normalizeTaskOrder(nextTasks);
 
   await persistTasks();
   renderTasks();
@@ -187,7 +546,88 @@ async function toggleTaskCompletion(taskId, completed) {
   }
 
   task.completed = completed;
+  task.subtasks = Array.isArray(task.subtasks)
+    ? task.subtasks.map((subtask) => ({
+        ...subtask,
+        completed,
+      }))
+    : [];
 
+  state.tasks.items = normalizeTaskOrder(state.tasks.items);
+
+  await persistTasks();
+  renderTasks();
+}
+
+async function cycleTaskPriority(taskId) {
+  const task = state.tasks.items.find((item) => item.id === taskId);
+
+  if (!task) {
+    return;
+  }
+
+  task.priority = getNextTaskPriority(task.priority);
+
+  await persistTasks();
+  renderTasks();
+}
+
+async function addSubtask(taskId) {
+  const task = state.tasks.items.find((item) => item.id === taskId);
+
+  if (!task) {
+    return;
+  }
+
+  const text = window.prompt(`Add a subtask for "${task.text}"`);
+
+  if (!text || !text.trim()) {
+    return;
+  }
+
+  task.subtasks = Array.isArray(task.subtasks) ? task.subtasks : [];
+  task.subtasks.push({
+    id: createId("subtask"),
+    text: text.trim(),
+    completed: false,
+  });
+
+  await persistTasks();
+  renderTasks();
+}
+
+async function toggleSubtaskCompletion(taskId, subtaskId, completed) {
+  const task = state.tasks.items.find((item) => item.id === taskId);
+
+  if (!task || !Array.isArray(task.subtasks)) {
+    return;
+  }
+
+  const subtask = task.subtasks.find((item) => item.id === subtaskId);
+
+  if (!subtask) {
+    return;
+  }
+
+  subtask.completed = completed;
+  await persistTasks();
+  renderTasks();
+}
+
+async function deleteSubtask(taskId, subtaskId) {
+  const task = state.tasks.items.find((item) => item.id === taskId);
+
+  if (!task || !Array.isArray(task.subtasks)) {
+    return;
+  }
+
+  const nextSubtasks = task.subtasks.filter((subtask) => subtask.id !== subtaskId);
+
+  if (nextSubtasks.length === task.subtasks.length) {
+    return;
+  }
+
+  task.subtasks = nextSubtasks;
   await persistTasks();
   renderTasks();
 }
@@ -206,31 +646,59 @@ async function deleteTask(taskId) {
 }
 
 function handleTaskListChange(event) {
-  const actionElement = event.target.closest("[data-task-action='toggle']");
+  const actionElement = event.target.closest("[data-task-action]");
 
   if (!actionElement) {
     return;
   }
 
-  void toggleTaskCompletion(actionElement.dataset.taskId, actionElement.checked);
+  const action = actionElement.dataset.taskAction;
+
+  if (action === "toggle") {
+    void toggleTaskCompletion(actionElement.dataset.taskId, actionElement.checked);
+  } else if (action === "toggle-subtask") {
+    void toggleSubtaskCompletion(
+      actionElement.dataset.parentTaskId,
+      actionElement.dataset.subtaskId,
+      actionElement.checked,
+    );
+  }
 }
 
 function handleTaskListClick(event) {
-  const actionElement = event.target.closest("[data-task-action='delete']");
+  const actionElement = event.target.closest("[data-task-action]");
 
   if (!actionElement) {
     return;
   }
 
-  const shouldDelete = window.confirm("Delete this task?");
+  const action = actionElement.dataset.taskAction;
 
-  if (shouldDelete) {
-    void deleteTask(actionElement.dataset.taskId);
+  if (action === "delete") {
+    const shouldDelete = window.confirm("Delete this task?");
+
+    if (shouldDelete) {
+      void deleteTask(actionElement.dataset.taskId);
+    }
+  } else if (action === "cycle-priority") {
+    void cycleTaskPriority(actionElement.dataset.taskId);
+  } else if (action === "add-subtask") {
+    void addSubtask(actionElement.dataset.taskId);
+  } else if (action === "delete-subtask") {
+    const shouldDelete = window.confirm("Delete this subtask?");
+
+    if (shouldDelete) {
+      void deleteSubtask(
+        actionElement.dataset.parentTaskId,
+        actionElement.dataset.subtaskId,
+      );
+    }
   }
 }
 
 export async function resetTodoList() {
   state.tasks.items = [];
+  clearTaskDragState();
   const saved = await persistTasks();
   renderTasks();
   setStatus(
@@ -254,7 +722,15 @@ export async function initTodoList() {
     dom.taskListElement.addEventListener("change", handleTaskListChange);
     dom.taskListElement.addEventListener("click", handleTaskListClick);
     dom.taskListElement.addEventListener("dragstart", handleTaskListDragStart);
+    dom.taskListElement.addEventListener("dragover", handleTaskListDragOver);
+    dom.taskListElement.addEventListener("drop", (event) => {
+      void handleTaskListDrop(event);
+    });
     dom.taskListElement.addEventListener("dragend", handleTaskListDragEnd);
+
+    dom.taskDoneListElement?.addEventListener("change", handleTaskListChange);
+    dom.taskDoneListElement?.addEventListener("click", handleTaskListClick);
+
     state.ui.todoListenersBound = true;
   }
 }

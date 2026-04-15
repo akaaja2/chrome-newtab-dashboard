@@ -29,6 +29,10 @@ function getDashboardCardToggleButton(cardElement) {
   return cardElement.querySelector("[data-dashboard-card-toggle]");
 }
 
+function getDashboardCardPinButton(cardElement) {
+  return cardElement.querySelector("[data-dashboard-card-pin]");
+}
+
 function getDashboardCardLabel(cardElement, fallbackLabel = "card") {
   const headingElement = cardElement.querySelector("h1, h2, h3");
 
@@ -66,8 +70,35 @@ function normalizeDashboardCardMinimizedState(
   return normalizedState;
 }
 
+function normalizeDashboardCardPinnedState(
+  savedPinnedCardIds,
+  availableCardIds = getAvailableDashboardCardIds(),
+) {
+  const availableCardSet = new Set(availableCardIds);
+  const seenCardIds = new Set();
+  const normalizedState = [];
+  const savedCardIds = Array.isArray(savedPinnedCardIds) ? savedPinnedCardIds : [];
+
+  for (const rawCardId of savedCardIds) {
+    const cardId = String(rawCardId || "").trim();
+
+    if (!cardId || seenCardIds.has(cardId) || !availableCardSet.has(cardId)) {
+      continue;
+    }
+
+    seenCardIds.add(cardId);
+    normalizedState.push(cardId);
+  }
+
+  return normalizedState;
+}
+
 function isDashboardCardMinimized(cardId) {
   return state.layout.minimizedCardIds.includes(cardId);
+}
+
+function isDashboardCardPinned(cardId) {
+  return state.layout.pinnedCardIds.includes(cardId);
 }
 
 // The saved order is built from known card IDs, then any new cards are appended
@@ -112,12 +143,15 @@ function updateDashboardDragClasses() {
     const isDragging = cardId === state.layout.draggingCardId;
     const isDropTarget = cardId === state.layout.dropTargetCardId;
     const isMinimized = cardId ? isDashboardCardMinimized(cardId) : false;
+    const isPinned = cardId ? isDashboardCardPinned(cardId) : false;
     const bodyElement = getDashboardCardBodyElement(cardElement);
     const toggleButton = getDashboardCardToggleButton(cardElement);
+    const pinButton = getDashboardCardPinButton(cardElement);
 
     cardElement.classList.toggle("is-dragging", isDragging);
     cardElement.classList.toggle("is-drop-target", isDropTarget);
     cardElement.classList.toggle("is-minimized", isMinimized);
+    cardElement.classList.toggle("is-pinned", isPinned);
 
     if (bodyElement) {
       bodyElement.hidden = isMinimized;
@@ -147,6 +181,17 @@ function updateDashboardDragClasses() {
       );
     }
 
+    if (pinButton) {
+      const cardLabel = getDashboardCardLabel(cardElement);
+      pinButton.setAttribute("aria-pressed", String(isPinned));
+      pinButton.textContent = isPinned ? "Unpin" : "Pin";
+      pinButton.title = isPinned ? "Unpin card" : "Pin card to top";
+      pinButton.setAttribute(
+        "aria-label",
+        `${isPinned ? "Unpin" : "Pin"} ${cardLabel} to top`,
+      );
+    }
+
     if (isDropTarget && state.layout.dropPosition) {
       cardElement.dataset.dropPosition = state.layout.dropPosition;
     } else {
@@ -172,6 +217,21 @@ function toggleDashboardCardMinimizedState(cardId) {
     : [cardId, ...state.layout.minimizedCardIds];
 
   state.layout.minimizedCardIds = normalizeDashboardCardMinimizedState(nextMinimizedCardIds);
+  updateDashboardDragClasses();
+
+  return true;
+}
+
+function toggleDashboardCardPinnedState(cardId) {
+  if (!cardId) {
+    return false;
+  }
+
+  const nextPinnedCardIds = state.layout.pinnedCardIds.includes(cardId)
+    ? state.layout.pinnedCardIds.filter((pinnedCardId) => pinnedCardId !== cardId)
+    : [cardId, ...state.layout.pinnedCardIds];
+
+  state.layout.pinnedCardIds = normalizeDashboardCardPinnedState(nextPinnedCardIds);
   updateDashboardDragClasses();
 
   return true;
@@ -288,12 +348,20 @@ function renderDashboardLayout() {
     state.layout.minimizedCardIds,
     Array.from(availableCards.keys()),
   );
+  const nextPinnedCardIds = normalizeDashboardCardPinnedState(
+    state.layout.pinnedCardIds,
+    Array.from(availableCards.keys()),
+  );
+  const pinnedCardSet = new Set(nextPinnedCardIds);
+  const pinnedOrder = nextOrder.filter((cardId) => pinnedCardSet.has(cardId));
+  const unpinnedOrder = nextOrder.filter((cardId) => !pinnedCardSet.has(cardId));
   const fragment = document.createDocumentFragment();
 
   state.layout.cardOrder = nextOrder;
   state.layout.minimizedCardIds = nextMinimizedCardIds;
+  state.layout.pinnedCardIds = nextPinnedCardIds;
 
-  for (const cardId of nextOrder) {
+  for (const cardId of [...pinnedOrder, ...unpinnedOrder]) {
     const cardElement = availableCards.get(cardId);
 
     if (cardElement) {
@@ -313,6 +381,10 @@ async function persistDashboardMinimizedState() {
   return writeStoredValue(STORAGE_KEYS.cardMinimized, state.layout.minimizedCardIds);
 }
 
+async function persistDashboardPinnedState() {
+  return writeStoredValue(STORAGE_KEYS.cardPinned, state.layout.pinnedCardIds);
+}
+
 // Restoring the layout is just moving existing cards into the saved ID order.
 async function loadSavedDashboardLayout() {
   if (!dom.dashboardLayoutElement) {
@@ -321,11 +393,14 @@ async function loadSavedDashboardLayout() {
 
   const savedCardOrder = await readStoredValue(STORAGE_KEYS.cardOrder, []);
   const savedMinimizedCardIds = await readStoredValue(STORAGE_KEYS.cardMinimized, []);
+  const savedPinnedCardIds = await readStoredValue(STORAGE_KEYS.cardPinned, []);
   state.layout.cardOrder = normalizeDashboardCardOrder(savedCardOrder);
   state.layout.minimizedCardIds = normalizeDashboardCardMinimizedState(savedMinimizedCardIds);
+  state.layout.pinnedCardIds = normalizeDashboardCardPinnedState(savedPinnedCardIds);
   renderDashboardLayout();
   await persistDashboardLayout();
   await persistDashboardMinimizedState();
+  await persistDashboardPinnedState();
 }
 
 // Drag start begins from the handle so inner controls stay clickable and safe.
@@ -447,20 +522,34 @@ function handleDashboardDragEnd() {
 
 function handleDashboardLayoutClick(event) {
   const toggleButton = event.target.closest("[data-dashboard-card-toggle]");
+  const pinButton = event.target.closest("[data-dashboard-card-pin]");
 
-  if (!toggleButton || !dom.dashboardLayoutElement.contains(toggleButton)) {
-    return;
+  if (toggleButton && dom.dashboardLayoutElement.contains(toggleButton)) {
+    const cardElement = toggleButton.closest("[data-dashboard-card-id]");
+    const cardId = cardElement ? cardElement.dataset.dashboardCardId : "";
+
+    if (!cardId) {
+      return;
+    }
+
+    if (toggleDashboardCardMinimizedState(cardId)) {
+      void persistDashboardMinimizedState();
+    }
   }
 
-  const cardElement = toggleButton.closest("[data-dashboard-card-id]");
-  const cardId = cardElement ? cardElement.dataset.dashboardCardId : "";
+  if (pinButton && dom.dashboardLayoutElement.contains(pinButton)) {
+    const cardElement = pinButton.closest("[data-dashboard-card-id]");
+    const cardId = cardElement ? cardElement.dataset.dashboardCardId : "";
 
-  if (!cardId) {
-    return;
-  }
+    if (!cardId) {
+      return;
+    }
 
-  if (toggleDashboardCardMinimizedState(cardId)) {
-    void persistDashboardMinimizedState();
+    if (toggleDashboardCardPinnedState(cardId)) {
+      renderDashboardLayout();
+      void persistDashboardPinnedState();
+      void persistDashboardLayout();
+    }
   }
 }
 
