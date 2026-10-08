@@ -702,6 +702,15 @@
                 Pin
               </button>
               <button
+                class="dashboard-card__export"
+                type="button"
+                id="task-export"
+                aria-label="Export To-Do List as Markdown"
+                title="Export as Markdown"
+              >
+                MD
+              </button>
+              <button
                 class="dashboard-card__drag-handle"
                 type="button"
                 draggable="true"
@@ -1045,7 +1054,7 @@
             <div>
               <h2 id="settings-heading">Settings</h2>
               <p class="card-subtitle">
-                Small reset actions for the dashboard.
+                Reset sections or back up and restore all saved data.
               </p>
             </div>
             <div class="dashboard-card__controls">
@@ -1088,8 +1097,8 @@
             <details class="settings-panel">
               <summary class="settings-summary">
                 <span>
-                  <span class="settings-title">Reset controls</span>
-                  <span class="settings-subtitle">Open to reveal the reset actions.</span>
+                  <span class="settings-title">Reset &amp; backup</span>
+                  <span class="settings-subtitle">Open to reset sections or back up all saved data.</span>
                 </span>
                 <span class="settings-summary__hint">Open settings</span>
               </summary>
@@ -1113,11 +1122,38 @@
                   </button>
                 </div>
 
+                <div class="settings-actions" aria-label="Back up dashboard data">
+                  <button class="settings-action" type="button" id="settings-export">
+                    Export backup
+                  </button>
+                  <button class="settings-action" type="button" id="settings-import">
+                    Import backup
+                  </button>
+                  <input
+                    class="settings-import-input"
+                    type="file"
+                    id="settings-import-input"
+                    accept="application/json,.json"
+                    hidden
+                  />
+                </div>
+
                 <p class="settings-status" id="settings-status" role="status" aria-live="polite">
                   No changes yet.
                 </p>
               </div>
             </details>
+
+            <p class="support-row">
+              Enjoying New Tab Dashboard?
+              <a
+                class="support-link"
+                id="support-kofi"
+                href="https://ko-fi.com/claudeusage"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Support it on Ko-fi</a>
+            </p>
           </div>
         </section>
       </section>

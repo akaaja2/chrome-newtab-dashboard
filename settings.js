@@ -1,5 +1,13 @@
 import { dom } from "./dom.js";
-import { setStatus } from "./shared.js";
+import {
+  KOFI_URL,
+  STORAGE_KEYS,
+  buildBackup,
+  getTodayKey,
+  parseBackup,
+  setStatus,
+  storageArea,
+} from "./shared.js";
 import { resetFavouriteLinks } from "./links.js";
 import { resetDashboards } from "./dashboards.js";
 import { resetTodoList } from "./tasks.js";
@@ -65,6 +73,86 @@ async function handleSettingsAction(action) {
   }
 }
 
+async function exportBackup() {
+  if (!storageArea) {
+    setSettingsStatus("Storage is unavailable, so there is nothing to export.", "error");
+    return false;
+  }
+
+  try {
+    const storedValues = await storageArea.get(Object.values(STORAGE_KEYS));
+    const backup = buildBackup(storedValues);
+    const fileName = `new-tab-dashboard-backup-${getTodayKey()}.json`;
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+    link.download = fileName;
+    link.rel = "noopener";
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+    setSettingsStatus(`Exported ${fileName}.`, "saved");
+    return true;
+  } catch (error) {
+    console.warn("New Tab Dashboard: failed to export a backup.", error);
+    setSettingsStatus("Could not export a backup right now.", "error");
+    return false;
+  }
+}
+
+async function importBackupFile(file) {
+  if (!file) {
+    return false;
+  }
+
+  if (!storageArea) {
+    setSettingsStatus("Storage is unavailable, so the backup cannot be imported.", "error");
+    return false;
+  }
+
+  let data;
+
+  try {
+    data = parseBackup(await file.text());
+  } catch (error) {
+    setSettingsStatus(`Import failed: ${error.message}`, "error");
+    return false;
+  }
+
+  const confirmed = window.confirm(
+    "Import this backup? Saved data for every section in the file will be replaced, then the page reloads.",
+  );
+
+  if (!confirmed) {
+    setSettingsStatus("Import cancelled.", "idle");
+    return false;
+  }
+
+  try {
+    await storageArea.set(data);
+  } catch (error) {
+    console.warn("New Tab Dashboard: failed to import a backup.", error);
+    setSettingsStatus("Could not save the imported data.", "error");
+    return false;
+  }
+
+  window.location.reload();
+  return true;
+}
+
+function handleImportInputChange(event) {
+  const [file] = event.target.files ?? [];
+  // Clear the input so choosing the same file again still fires a change event.
+  event.target.value = "";
+  void importBackupFile(file);
+}
+
 function handleSettingsClick(event) {
   const actionButton = event.target.closest("[data-reset-action]");
 
@@ -76,6 +164,10 @@ function handleSettingsClick(event) {
 }
 
 export function initSettings() {
+  if (dom.supportKofiLinkElement) {
+    dom.supportKofiLinkElement.href = KOFI_URL;
+  }
+
   if (!dom.settingsPanelElement || !dom.settingsSummaryHintElement || !dom.settingsActionButtons.length) {
     return;
   }
@@ -86,4 +178,10 @@ export function initSettings() {
   for (const button of dom.settingsActionButtons) {
     button.addEventListener("click", handleSettingsClick);
   }
+
+  dom.settingsExportButton?.addEventListener("click", () => {
+    void exportBackup();
+  });
+  dom.settingsImportButton?.addEventListener("click", () => dom.settingsImportInput?.click());
+  dom.settingsImportInput?.addEventListener("change", handleImportInputChange);
 }

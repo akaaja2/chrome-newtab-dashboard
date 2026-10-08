@@ -67,6 +67,7 @@ export const dom = {
   taskPrioritySelectElement: document.getElementById("task-priority"),
   taskInputElement: document.getElementById("task-input"),
   taskMessageElement: document.getElementById("task-message"),
+  taskExportButton: document.getElementById("task-export"),
   taskListElement: document.getElementById("task-list"),
   tasksEmptyStateElement: document.getElementById("tasks-empty-state"),
   taskDonePanelElement: document.getElementById("task-done-panel"),
@@ -94,4 +95,8 @@ export const dom = {
   settingsSummaryHintElement: document.querySelector(".settings-summary__hint"),
   settingsActionButtons: Array.from(document.querySelectorAll("[data-reset-action]")),
   settingsStatusElement: document.getElementById("settings-status"),
+  settingsExportButton: document.getElementById("settings-export"),
+  settingsImportButton: document.getElementById("settings-import"),
+  settingsImportInput: document.getElementById("settings-import-input"),
+  supportKofiLinkElement: document.getElementById("support-kofi"),
 };

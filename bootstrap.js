@@ -10,6 +10,7 @@ import { initBackgrounds } from "./backgrounds.js";
 import { initCardSurface } from "./card-surface.js";
 import { initSettings } from "./settings.js";
 import { startClockTicker } from "./clock.js";
+import { initCrossTabSync } from "./sync.js";
 
 async function bootstrap() {
   await initDashboardLayout();
@@ -27,6 +28,7 @@ async function bootstrap() {
     initSettings(),
   ]);
 
+  initCrossTabSync();
   startClockTicker();
   startPomodoroTicker();
   window.addEventListener("beforeunload", stopRotatingQuotesTicker);

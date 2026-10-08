@@ -77,6 +77,49 @@ function normalizeTask(task) {
   };
 }
 
+function splitLinkToken(token) {
+  const leadingChars = "([{\"'`<";
+  const trailingChars = ")]}.!,?:;\"'`>";
+  let start = 0;
+  let end = token.length;
+
+  while (start < end && leadingChars.includes(token[start])) {
+    start += 1;
+  }
+
+  while (end > start && trailingChars.includes(token[end - 1])) {
+    end -= 1;
+  }
+
+  return {
+    leading: token.slice(0, start),
+    core: token.slice(start, end),
+    trailing: token.slice(end),
+  };
+}
+
+function renderSubtaskTextMarkup(text) {
+  return String(text)
+    .split(/(\s+)/)
+    .map((part) => {
+      if (!part || /^\s+$/.test(part)) {
+        return escapeHtml(part);
+      }
+
+      const { leading, core, trailing } = splitLinkToken(part);
+
+      if (!core.startsWith("https://")) {
+        return escapeHtml(part);
+      }
+
+      return (
+        `${escapeHtml(leading)}<a class="task-subtask-link" href="${escapeHtml(core)}" ` +
+        `target="_blank" rel="noreferrer noopener">${escapeHtml(core)}</a>${escapeHtml(trailing)}`
+      );
+    })
+    .join("");
+}
+
 function splitTasksByCompletion(taskItems) {
   const activeTasks = [];
   const doneTasks = [];
@@ -93,6 +136,80 @@ function splitTasksByCompletion(taskItems) {
     activeTasks,
     doneTasks,
   };
+}
+
+function countCompletedSubtasks(taskItems) {
+  return taskItems.reduce((sum, task) => {
+    if (!Array.isArray(task.subtasks)) {
+      return sum;
+    }
+
+    return (
+      sum +
+      task.subtasks.reduce((subtaskSum, subtask) => subtaskSum + (subtask.completed ? 1 : 0), 0)
+    );
+  }, 0);
+}
+
+function escapeMarkdownInline(value) {
+  return String(value || "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll("`", "\\`")
+    .replaceAll("*", "\\*")
+    .replaceAll("_", "\\_")
+    .replaceAll("[", "\\[")
+    .replaceAll("]", "\\]")
+    .replaceAll(">", "\\>")
+    .replaceAll("\r\n", " ")
+    .replaceAll("\n", " ");
+}
+
+function appendMarkdownTaskLine(lines, task, indentLevel = 0, { includePriority = false } = {}) {
+  const indent = "  ".repeat(indentLevel);
+  const checkbox = task.completed ? "x" : " ";
+  const normalizedPriority = normalizeTaskPriority(task.priority);
+  const prioritySuffix =
+    includePriority && normalizedPriority !== DEFAULT_TASK_PRIORITY_ID
+      ? ` (${escapeMarkdownInline(getTaskPriorityLabel(normalizedPriority))})`
+      : "";
+
+  lines.push(`${indent}- [${checkbox}] ${escapeMarkdownInline(task.text)}${prioritySuffix}`);
+
+  if (!Array.isArray(task.subtasks) || task.subtasks.length === 0) {
+    return;
+  }
+
+  for (const subtask of task.subtasks) {
+    appendMarkdownTaskLine(lines, subtask, indentLevel + 1);
+  }
+}
+
+function buildTodoMarkdown(taskItems) {
+  const { activeTasks, doneTasks } = splitTasksByCompletion(taskItems);
+  const exportDateLabel = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date());
+  const lines = ["# To-Do List", "", `Exported ${exportDateLabel}`, ""];
+
+  lines.push("## Active");
+
+  if (activeTasks.length === 0) {
+    lines.push("- No active tasks");
+  } else {
+    for (const task of activeTasks) {
+      appendMarkdownTaskLine(lines, task, 0, { includePriority: true });
+    }
+  }
+
+  lines.push("", "## Done");
+
+  if (doneTasks.length === 0) {
+    lines.push("- No completed tasks");
+  } else {
+    for (const task of doneTasks) {
+      appendMarkdownTaskLine(lines, task, 0, { includePriority: true });
+    }
+  }
+
+  return `${lines.join("\n").trimEnd()}\n`;
 }
 
 function normalizeTaskOrder(taskItems) {
@@ -384,7 +501,7 @@ function renderSubtaskMarkup(task) {
               data-subtask-id="${escapeHtml(subtask.id)}"
               ${subtask.completed ? "checked" : ""}
             />
-            <span class="task-subtask-text">${escapeHtml(subtask.text)}</span>
+            <span class="task-subtask-text">${renderSubtaskTextMarkup(subtask.text)}</span>
           </label>
           <div class="task-subtask-actions">
             <button
@@ -409,6 +526,33 @@ function renderSubtaskMarkup(task) {
   `;
 }
 
+async function exportTodoMarkdown() {
+  try {
+    const markdown = buildTodoMarkdown(state.tasks.items);
+    const fileName = `todo-list-${getTodayKey()}.md`;
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+    link.download = fileName;
+    link.rel = "noopener";
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+    setTaskMessage(`Exported ${fileName}.`, "saved");
+    return true;
+  } catch (error) {
+    console.warn("New Tab Dashboard: failed to export the to-do list as Markdown.", error);
+    setTaskMessage("Could not export the to-do list right now.", "error");
+    return false;
+  }
+}
+
 function renderTaskPriorityMarkup(task) {
   const priorityId = normalizeTaskPriority(task.priority);
   const priorityLabel = getTaskPriorityLabel(priorityId);
@@ -427,8 +571,22 @@ function renderTaskPriorityMarkup(task) {
   `;
 }
 
-function createTaskMarkup(task) {
+export function createTaskMarkup(task, { showBumpButton = true } = {}) {
   const taskCheckboxId = getTaskLabelId(task.id);
+  const bumpButtonMarkup = showBumpButton
+    ? `
+      <button
+        class="task-action-button task-action-button--bump"
+        type="button"
+        data-task-action="bump-top"
+        data-task-id="${escapeHtml(task.id)}"
+        aria-label="Move ${escapeHtml(task.text)} to the top"
+        title="Move to top"
+      >
+        Top
+      </button>
+    `
+    : "";
 
   return `
     <div class="task-item__main">
@@ -446,6 +604,7 @@ function createTaskMarkup(task) {
     </div>
     <div class="task-item__actions">
       ${renderTaskPriorityMarkup(task)}
+      ${bumpButtonMarkup}
       <button
         class="task-action-button task-action-button--subtask"
         type="button"
@@ -480,7 +639,7 @@ function renderTaskList(listElement, tasks, { isDoneList = false } = {}) {
     item.dataset.taskId = task.id;
     item.draggable = !task.completed && !isDoneList;
     item.setAttribute("aria-grabbed", "false");
-    item.innerHTML = createTaskMarkup(task);
+    item.innerHTML = createTaskMarkup(task, { showBumpButton: !isDoneList });
     listElement.appendChild(item);
   }
 }
@@ -491,6 +650,7 @@ function renderTasks() {
   }
 
   const { activeTasks, doneTasks } = splitTasksByCompletion(state.tasks.items);
+  const completedItemCount = doneTasks.length + countCompletedSubtasks(state.tasks.items);
   const hasCompletionHistory = state.tasks.completionHistory.length > 0;
 
   renderTaskList(dom.taskListElement, activeTasks);
@@ -508,15 +668,15 @@ function renderTasks() {
   }
 
   if (dom.taskDoneEmptyStateElement) {
-    dom.taskDoneEmptyStateElement.hidden = doneTasks.length > 0 || hasCompletionHistory;
+    dom.taskDoneEmptyStateElement.hidden = completedItemCount > 0 || hasCompletionHistory;
   }
 
   if (dom.taskDonePanelElement) {
-    dom.taskDonePanelElement.hidden = doneTasks.length === 0 && !hasCompletionHistory;
+    dom.taskDonePanelElement.hidden = completedItemCount === 0 && !hasCompletionHistory;
   }
 
   if (dom.taskDoneCountElement) {
-    dom.taskDoneCountElement.textContent = String(doneTasks.length);
+    dom.taskDoneCountElement.textContent = String(completedItemCount);
   }
 
   updateTaskDragClasses();
@@ -736,6 +896,28 @@ async function cycleTaskPriority(taskId) {
   renderTasks();
 }
 
+async function bumpTaskToTop(taskId) {
+  const { activeTasks, doneTasks } = splitTasksByCompletion(state.tasks.items);
+  const movingIndex = activeTasks.findIndex((task) => task.id === taskId);
+
+  if (movingIndex <= 0) {
+    return;
+  }
+
+  const reorderedActiveTasks = [...activeTasks];
+  const [movingTask] = reorderedActiveTasks.splice(movingIndex, 1);
+
+  if (!movingTask) {
+    return;
+  }
+
+  reorderedActiveTasks.unshift(movingTask);
+  state.tasks.items = [...reorderedActiveTasks, ...doneTasks];
+
+  await persistTasks();
+  renderTasks();
+}
+
 async function addSubtask(taskId) {
   const task = state.tasks.items.find((item) => item.id === taskId);
 
@@ -844,6 +1026,8 @@ function handleTaskListClick(event) {
     if (shouldDelete) {
       void deleteTask(actionElement.dataset.taskId);
     }
+  } else if (action === "bump-top") {
+    void bumpTaskToTop(actionElement.dataset.taskId);
   } else if (action === "cycle-priority") {
     void cycleTaskPriority(actionElement.dataset.taskId);
   } else if (action === "add-subtask") {
@@ -858,6 +1042,11 @@ function handleTaskListClick(event) {
       );
     }
   }
+}
+
+function handleTaskExportClick(event) {
+  event.preventDefault();
+  void exportTodoMarkdown();
 }
 
 export async function resetTodoList() {
@@ -884,6 +1073,7 @@ export async function initTodoList() {
 
   if (!state.ui.todoListenersBound) {
     dom.taskFormElement.addEventListener("submit", handleTaskFormSubmit);
+    dom.taskExportButton?.addEventListener("click", handleTaskExportClick);
     dom.taskListElement.addEventListener("change", handleTaskListChange);
     dom.taskListElement.addEventListener("click", handleTaskListClick);
     dom.taskListElement.addEventListener("dragstart", handleTaskListDragStart);

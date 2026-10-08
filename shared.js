@@ -12,6 +12,9 @@ export const STORAGE_KEYS = {
   cardPinned: "dashboard.cardPinned",
 };
 
+// Single source of truth for the donate link. newtab.html carries a matching href (a test keeps them in sync).
+export const KOFI_URL = "https://ko-fi.com/claudeusage";
+
 export const CUSTOM_BACKGROUND_ID = "custom-image";
 export const CUSTOM_BACKGROUND_MAX_BYTES = 1500000;
 
@@ -311,4 +314,63 @@ export function formatDuration(totalSeconds) {
   const seconds = String(safeSeconds % 60).padStart(2, "0");
 
   return `${minutes}:${seconds}`;
+}
+
+export const BACKUP_FORMAT = "new-tab-dashboard-backup";
+export const BACKUP_VERSION = 1;
+
+const DASHBOARD_STORAGE_KEYS = new Set(Object.values(STORAGE_KEYS));
+
+export function isDashboardStorageKey(key) {
+  return DASHBOARD_STORAGE_KEYS.has(key);
+}
+
+export function buildBackup(storedValues, exportedAt = new Date()) {
+  const data = {};
+
+  for (const [key, value] of Object.entries(storedValues ?? {})) {
+    if (isDashboardStorageKey(key) && value !== undefined) {
+      data[key] = value;
+    }
+  }
+
+  return {
+    format: BACKUP_FORMAT,
+    version: BACKUP_VERSION,
+    exportedAt: exportedAt.toISOString(),
+    data,
+  };
+}
+
+// Returns only the known dashboard keys so a hand-edited or foreign file cannot write arbitrary storage.
+export function parseBackup(text) {
+  let parsed;
+
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error("The file is not valid JSON.");
+  }
+
+  if (!parsed || parsed.format !== BACKUP_FORMAT || typeof parsed.data !== "object" || !parsed.data) {
+    throw new Error("The file is not a New Tab Dashboard backup.");
+  }
+
+  if (typeof parsed.version !== "number" || parsed.version > BACKUP_VERSION) {
+    throw new Error("The backup was made by a newer version of the dashboard.");
+  }
+
+  const data = {};
+
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (isDashboardStorageKey(key)) {
+      data[key] = value;
+    }
+  }
+
+  if (Object.keys(data).length === 0) {
+    throw new Error("The backup does not contain any dashboard data.");
+  }
+
+  return data;
 }

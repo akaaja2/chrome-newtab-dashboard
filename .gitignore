@@ -12,3 +12,9 @@ Desktop.ini
 node_modules/
 dist/
 coverage/
+
+# Release output and anything that may hold personal data
+dist/
+*backup*.json
+screenshots/
+*.zip

@@ -11,6 +11,7 @@ A small Chrome Extension Manifest V3 project that replaces the default new tab p
 - Favourite links with add, edit, and delete actions
 - Daily earnings tracker with GBP totals and USD conversion
 - Quick-launch tabs for UserTesting and Prolific
+- Backup export and import
 - Local HTML dashboard cards for saved file paths and `file:///` URLs
 - To-do list with completion and removal controls
 - Quick notes with autosave
@@ -74,11 +75,22 @@ chrome-newtab-dashboard/
 
 ## Roadmap
 
-- Add optional background upload previews
-- Let users reorder favourite links and tasks
-- Add import/export for saved dashboard data
-- Remember whether the settings panel was open or closed
-- Add lightweight tests for storage and rendering helpers
+Planned work is tracked in Linear (see `DEV-WORKFLOW.md`): free release, stickiness (onboarding, Today's top 3, weekly review, themes) and a Pro tier.
+
+Already built: backup import/export, cross-tab sync, task priorities and subtasks, unit and release tests.
+
+## Development
+
+```powershell
+npm test            # node --test "tests/*.test.mjs"
+npm run package     # builds dist/new-tab-dashboard-<version>.zip
+```
+
+See `DEV-WORKFLOW.md` for the Linear-led workflow, `docs/QA.md` for manual checks and `docs/WEBSTORE.md` for publishing. Install steps for users are in `INSTALL.md`.
+
+## Support
+
+If you find it useful, you can support development on Ko-fi: https://ko-fi.com/claudeusage
 
 ## Notes
 

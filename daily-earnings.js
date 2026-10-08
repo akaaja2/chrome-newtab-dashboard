@@ -396,6 +396,7 @@ function renderQuickLinks() {
 function renderDailyEarnings() {
   const entries = sortEntries(state.dailyEarnings.entries);
   state.dailyEarnings.entries = entries;
+  const recentEntries = entries.slice(0, 2);
 
   updateSummaryTotals(entries);
   renderMiniChart(dom.earningsWeekMiniChartElement, 7, entries);
@@ -403,12 +404,12 @@ function renderDailyEarnings() {
 
   if (dom.earningsListElement) {
     dom.earningsListElement.replaceChildren(
-      ...entries.map((entry) => createEarningsEntryElement(entry)),
+      ...recentEntries.map((entry) => createEarningsEntryElement(entry)),
     );
   }
 
   if (dom.earningsEmptyStateElement) {
-    dom.earningsEmptyStateElement.hidden = entries.length > 0;
+    dom.earningsEmptyStateElement.hidden = recentEntries.length > 0;
   }
 }
 
