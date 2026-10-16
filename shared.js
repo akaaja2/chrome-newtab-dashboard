@@ -139,8 +139,33 @@ export function setStatus(element, message, type = "idle") {
   element.dataset.state = type;
 }
 
+const WRAPPING_QUOTE_CHARACTERS = new Set(['"', "'", "\u201C", "\u201D", "\u2018", "\u2019"]);
+
+// Explorer's "Copy as path" wraps the path in double quotes, and some editors turn them into
+// smart quotes. Strip any quote characters that wrap the whole value, plus surrounding spaces.
+export function stripWrappingQuotes(inputValue) {
+  let value = String(inputValue ?? "").trim();
+
+  while (
+    value.length >= 2 &&
+    WRAPPING_QUOTE_CHARACTERS.has(value[0]) &&
+    WRAPPING_QUOTE_CHARACTERS.has(value[value.length - 1])
+  ) {
+    value = value.slice(1, -1).trim();
+  }
+
+  return value;
+}
+
+function encodePathSegments(path) {
+  return path
+    .split(/[\\\/]+/)
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment));
+}
+
 function normalizeLocalFileUrl(inputValue) {
-  const rawValue = inputValue.trim();
+  const rawValue = stripWrappingQuotes(inputValue);
 
   if (!rawValue) {
     return null;
@@ -169,10 +194,7 @@ function normalizeLocalFileUrl(inputValue) {
   const uncPath = rawValue.match(/^\\\\([^\\\/]+)[\\\/](.+)$/);
   if (uncPath) {
     const host = uncPath[1];
-    const pathSegments = uncPath[2]
-      .split(/[\\\/]+/)
-      .filter(Boolean)
-      .map((segment) => encodeURIComponent(segment));
+    const pathSegments = encodePathSegments(uncPath[2]);
 
     return pathSegments.length > 0 ? `file://${host}/${pathSegments.join("/")}` : null;
   }
@@ -180,10 +202,7 @@ function normalizeLocalFileUrl(inputValue) {
   const windowsPath = rawValue.match(/^([a-zA-Z]):[\\\/](.+)$/);
   if (windowsPath) {
     const driveLetter = windowsPath[1].toUpperCase();
-    const pathSegments = windowsPath[2]
-      .split(/[\\\/]+/)
-      .filter(Boolean)
-      .map((segment) => encodeURIComponent(segment));
+    const pathSegments = encodePathSegments(windowsPath[2]);
 
     return pathSegments.length > 0 ? `file:///${driveLetter}:/${pathSegments.join("/")}` : null;
   }
@@ -192,7 +211,7 @@ function normalizeLocalFileUrl(inputValue) {
 }
 
 export function normalizeUrl(inputValue) {
-  const rawValue = inputValue.trim();
+  const rawValue = stripWrappingQuotes(inputValue);
 
   if (!rawValue) {
     return null;
@@ -220,6 +239,37 @@ export function normalizeUrl(inputValue) {
   }
 
   return null;
+}
+
+// Dashboards are local files only: a Windows, UNC or POSIX path, or a file:// URL, optionally
+// wrapped in quotes. Anything that does not resolve to a file: URL is rejected.
+export function normalizeLocalDashboardUrl(inputValue) {
+  const rawValue = stripWrappingQuotes(inputValue);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  // POSIX absolute path (but not a protocol-relative or UNC-style "//host/..." value).
+  if (/^\/(?!\/)/.test(rawValue)) {
+    const pathSegments = encodePathSegments(rawValue);
+
+    return pathSegments.length > 0 ? `file:///${pathSegments.join("/")}` : null;
+  }
+
+  const normalizedUrl = normalizeUrl(rawValue);
+
+  if (!normalizedUrl) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(normalizedUrl);
+
+    return parsed.protocol === "file:" ? parsed.href : null;
+  } catch {
+    return null;
+  }
 }
 
 export function formatDisplayUrl(url) {
