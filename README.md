@@ -1,101 +1,103 @@
 # New Tab Dashboard
 
-A small Chrome Extension Manifest V3 project that replaces the default new tab page with a lightweight dashboard.
+[![CI](https://github.com/akaaja2/chrome-newtab-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/akaaja2/chrome-newtab-dashboard/actions/workflows/ci.yml)
+![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-1d3557)
+![Permissions](https://img.shields.io/badge/permissions-storage%20only-2e7d32)
+![Dependencies](https://img.shields.io/badge/dependencies-none-2e7d32)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+A calm, private replacement for Chrome's new tab page: tasks, notes, a Pomodoro timer, quotes, quick links and backgrounds. No account, no analytics, no build step. Your data stays in your browser.
+
+<!-- Add a 1280x800 screenshot here using dummy data only: ![New Tab Dashboard](docs/screenshot.png) -->
 
 ## Features
 
-- Live 24-hour clock and readable date
-- Pomodoro timer with work and break modes
-- Rotating motivational quotes
-- Drag a task onto the timer to start a focus session
-- Favourite links with add, edit, and delete actions
-- Daily earnings tracker with GBP totals and USD conversion
-- Quick-launch tabs for UserTesting and Prolific
-- Backup export and import
-- Local HTML dashboard cards for saved file paths and `file:///` URLs
-- To-do list with completion and removal controls
-- Quick notes with autosave
-- Built-in geometric and local image backgrounds
-- Optional patterned or opaque card surfaces
-- User-uploaded custom background images
-- Compact settings panel with reset actions
-- Storage-backed persistence using `chrome.storage.local`
+| | |
+|---|---|
+| **Tasks** | Priorities, subtasks, a done list and a completion heatmap. Drag a task onto the timer to start a labelled focus session. |
+| **Notes** | Quick notes that autosave locally. |
+| **Pomodoro** | Work and break modes with a log of completed sessions. |
+| **Links** | Favourite links, including local `file:///` links, with add, edit and delete. |
+| **Dashboards** | Launcher cards for local HTML files. |
+| **Daily earnings** | GBP totals with USD conversion, plus quick-launch tabs for UserTesting and Prolific. |
+| **Layout** | Drag to reorder, minimise or pin cards. Patterned or opaque card surfaces. |
+| **Backgrounds** | Built-in geometric presets or your own image (up to about 1.5 MB). |
+| **Backup** | Export and import everything as JSON. |
+| **Quotes** | A rotating motivational quote card. |
 
-## How to load in Chrome
+## Install
 
-1. Open Chrome and go to `chrome://extensions`.
-2. Turn on **Developer mode**.
-3. Click **Load unpacked**.
-4. Select this project folder: `chrome-newtab-dashboard`.
-5. Open a new tab to see the dashboard.
+The extension is not on the Chrome Web Store yet. Install it unpacked:
 
-## File Structure
+1. Download `new-tab-dashboard-1.0.0.zip` from the [Releases](https://github.com/akaaja2/chrome-newtab-dashboard/releases) page and extract it to a **permanent folder**. Chrome loads the extension from that folder, so do not move or delete it.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Click **Load unpacked** and select the folder that contains `manifest.json`.
+4. Open a new tab.
 
-```text
-chrome-newtab-dashboard/
-|-- manifest.json
-|-- newtab.html
-|-- bootstrap.js
-|-- clock.js
-|-- dom.js
-|-- layout.js
-|-- quotes.js
-|-- links.js
-|-- dashboards.js
-|-- daily-earnings.js
-|-- notes.js
-|-- backgrounds.js
-|-- card-surface.js
-|-- pomodoro.js
-|-- settings.js
-|-- shared.js
-|-- state.js
-|-- tasks.js
-|-- styles.css
-|-- README.md
-|-- .gitignore
-`-- assets/
-    `-- backgrounds/
-        |-- paper-drift.svg
-        |-- sky-veil.svg
-        |-- geometric-grid.svg
-        |-- geometric-facet.svg
-        |-- geometric-orbit.svg
-        `-- geometric-lattice.svg
+Or run it from source:
+
+```powershell
+git clone https://github.com/akaaja2/chrome-newtab-dashboard.git
 ```
 
-- `manifest.json` defines the extension and points Chrome at the custom new tab page.
-- `newtab.html` contains the dashboard markup and semantic layout.
-- `styles.css` handles the visual design, layout, and responsive behavior.
-- `bootstrap.js` initializes the dashboard modules in a safe order.
-- `shared.js`, `state.js`, and `dom.js` hold shared constants, state, and DOM references.
-- `layout.js`, `clock.js`, `links.js`, `dashboards.js`, `tasks.js`, `notes.js`, `pomodoro.js`, `backgrounds.js`, and `settings.js` each handle one feature area.
-- `card-surface.js` controls the patterned or opaque card surface preference.
-- `assets/backgrounds/` stores the small local SVG background presets used by the dashboard.
+Then load the cloned folder with **Load unpacked** as above.
 
-## Roadmap
+**Local files.** For local links and dashboards, open the extension's **Details** on `chrome://extensions` and enable **Allow access to file URLs**.
 
-Planned work is tracked in Linear (see `DEV-WORKFLOW.md`): free release, stickiness (onboarding, Today's top 3, weekly review, themes) and a Pro tier.
+**Updating.** Export a backup (**Settings > Export backup**), close dashboard tabs, extract the new ZIP over the same folder, then reload the extension.
 
-Already built: backup import/export, cross-tab sync, task priorities and subtasks, unit and release tests.
+More detail: [INSTALL.md](INSTALL.md).
+
+## Privacy
+
+- Tasks, notes, links, earnings, settings, layout and uploaded backgrounds are stored only in `chrome.storage.local`. There is no server and no sync service.
+- No analytics, no tracking, no remote code.
+- **No third-party requests:** saved links show a letter tile, not a site icon, so no saved address ever leaves your browser. See [PRIVACY.md](PRIVACY.md) and the [security audit](docs/SECURITY-AUDIT.md).
+
+## Permissions
+
+| Permission | Why |
+|---|---|
+| `storage` | Saves your data in your browser. |
+
+That is the only permission. A test fails the build if another is added. The extension has no host permissions and a strict CSP (`script-src 'self'; object-src 'self'`).
 
 ## Development
 
+Dependency-free: plain ES modules, HTML and CSS. Needs Node 22 for the tests only.
+
 ```powershell
-npm test            # node --test "tests/*.test.mjs"
+npm test            # node --test "tests/*.test.mjs"  (31 tests)
 npm run package     # builds dist/new-tab-dashboard-<version>.zip
 ```
 
-See `DEV-WORKFLOW.md` for the Linear-led workflow, `docs/QA.md` for manual checks and `docs/WEBSTORE.md` for publishing. Install steps for users are in `INSTALL.md`.
+| Layer | File | Protects |
+|---|---|---|
+| Unit | `tests/shared.test.mjs` | URL normalisation, backups, durations |
+| Release | `tests/release.test.mjs` | MV3 manifest, `storage` only, CSP, no inline scripts or remote resources, no personal data |
+| Markup | `tests/markup.test.mjs` | User text is HTML-escaped |
+| Package | `tests/package.test.mjs` | ZIP layout, contents identical to source |
+
+Architecture notes are in [CLAUDE.md](CLAUDE.md), manual browser checks in [docs/QA.md](docs/QA.md), publishing steps in [docs/WEBSTORE.md](docs/WEBSTORE.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) to report a vulnerability, and [docs/SECURITY-AUDIT.md](docs/SECURITY-AUDIT.md) for the latest review and known limitations. [docs/LLM-REVIEW-PROMPTS.md](docs/LLM-REVIEW-PROMPTS.md) holds prompts for independent AI review.
+
+## Known limitations
+
+- Two dashboard windows edited at the same time can overwrite each other. Hidden tabs refresh when shown again.
+- Uploaded background images live in `chrome.storage.local`, which suits a small image but not a large library.
+- Browser-level testing (persistence, backup, layout) is documented in `docs/QA.md` but has not yet been run on a fresh profile.
+
+## Roadmap
+
+Free v1.0 release, then stickiness features (onboarding, today's top three, weekly review, themes), then an optional Pro tier. See [BACKLOG.md](BACKLOG.md).
 
 ## Support
 
-If you find it useful, you can support development on Ko-fi: https://ko-fi.com/claudeusage
+It is free. If it helps you focus, you can support it on [Ko-fi](https://ko-fi.com/claudeusage).
 
-## Notes
+## Licence
 
-- The project is intentionally dependency-free.
-- Uploaded custom background images are stored locally in `chrome.storage.local`, which is suitable for a small MVP but not ideal for large or long-term image storage.
-- Favourite links accept normal web URLs as well as local file links such as `file:///C:/Users/.../Downloads/report.pdf`.
-- Dashboards are meant for local HTML files and fall back to the file name when an HTML title cannot be read.
-- If Chrome blocks a local file URL, open `chrome://extensions`, find this extension, and enable **Allow access to file URLs**.
+[MIT](LICENSE)

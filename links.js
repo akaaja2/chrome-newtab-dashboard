@@ -85,20 +85,6 @@ async function openLink(url) {
   return openUrlInNewTab(url);
 }
 
-function getFaviconUrl(url) {
-  try {
-    const parsed = new URL(url);
-
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return null;
-    }
-  } catch {
-    return null;
-  }
-
-  return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url)}&sz=64`;
-}
-
 function createSavedLinkCard(link, compact = false) {
   const card = document.createElement("article");
   card.className = "saved-link-card";
@@ -118,25 +104,7 @@ function createSavedLinkCard(link, compact = false) {
   favicon.className = "saved-link-card__favicon";
   favicon.dataset.initial = link.title.trim().charAt(0).toUpperCase() || "?";
 
-  const faviconImage = document.createElement("img");
-  faviconImage.alt = "";
-  faviconImage.loading = "lazy";
-  faviconImage.decoding = "async";
-  faviconImage.referrerPolicy = "no-referrer";
-  const faviconUrl = getFaviconUrl(link.url);
-
-  if (faviconUrl) {
-    faviconImage.addEventListener("load", () => {
-      favicon.classList.add("has-image");
-    });
-    faviconImage.addEventListener("error", () => {
-      faviconImage.remove();
-    });
-    faviconImage.src = faviconUrl;
-    favicon.appendChild(faviconImage);
-  } else {
-    favicon.classList.add("saved-link-card__favicon--file");
-  }
+  favicon.classList.add("saved-link-card__favicon--file");
 
   const text = document.createElement("div");
   text.className = "saved-link-card__text";
