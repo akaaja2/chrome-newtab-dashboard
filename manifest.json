@@ -3,6 +3,12 @@
   "name": "New Tab Dashboard",
   "version": "1.0.0",
   "description": "A clean new tab dashboard: tasks with priorities, autosaving notes, Pomodoro timer, quotes, links, earnings and backgrounds.",
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
   "permissions": ["storage"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

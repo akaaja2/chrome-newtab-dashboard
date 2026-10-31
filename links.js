@@ -2,6 +2,7 @@ import { dom } from "./dom.js";
 import {
   createId,
   formatDisplayUrl,
+  getFaviconRequestUrl,
   normalizeUrl,
   openUrlInNewTab,
   readStoredValue,
@@ -85,20 +86,6 @@ async function openLink(url) {
   return openUrlInNewTab(url);
 }
 
-function getFaviconUrl(url) {
-  try {
-    const parsed = new URL(url);
-
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return null;
-    }
-  } catch {
-    return null;
-  }
-
-  return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url)}&sz=64`;
-}
-
 function createSavedLinkCard(link, compact = false) {
   const card = document.createElement("article");
   card.className = "saved-link-card";
@@ -123,7 +110,7 @@ function createSavedLinkCard(link, compact = false) {
   faviconImage.loading = "lazy";
   faviconImage.decoding = "async";
   faviconImage.referrerPolicy = "no-referrer";
-  const faviconUrl = getFaviconUrl(link.url);
+  const faviconUrl = getFaviconRequestUrl(link.url);
 
   if (faviconUrl) {
     faviconImage.addEventListener("load", () => {

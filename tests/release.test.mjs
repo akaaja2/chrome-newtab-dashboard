@@ -152,3 +152,20 @@ test("no exported backups or screenshots sit in the project root", () => {
   );
   assert.deepEqual(suspicious, []);
 });
+
+test("manifest icons exist, are PNGs of the declared size and are packaged", () => {
+  for (const size of ["16", "32", "48", "128"]) {
+    const path = manifest.icons?.[size];
+    assert.ok(path, `manifest.icons.${size} is missing`);
+    const data = readFileSync(join(ROOT, path));
+    assert.equal(data.subarray(1, 4).toString("ascii"), "PNG", `${path} is not a PNG`);
+    assert.equal(data.readUInt32BE(16), Number(size), `${path} width`);
+    assert.equal(data.readUInt32BE(20), Number(size), `${path} height`);
+    assert.ok(runtimeFiles.includes(path), `${path} is not in the package`);
+  }
+});
+
+test("the icon check can fail (negative test)", () => {
+  const fakePng = Buffer.alloc(24);
+  assert.notEqual(fakePng.subarray(1, 4).toString("ascii"), "PNG");
+});
