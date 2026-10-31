@@ -13,6 +13,7 @@ const {
   buildBackup,
   escapeHtml,
   formatDuration,
+  getFaviconRequestUrl,
   getFileNameFromUrlOrPath,
   getTodayKey,
   normalizeUrl,
@@ -83,4 +84,17 @@ test("parseBackup rejects invalid files", () => {
     () => parseBackup(JSON.stringify({ format: "new-tab-dashboard-backup", version: 1, data: { x: 1 } })),
     /does not contain any dashboard data/,
   );
+});
+
+test("favicon request sends only the origin of a saved link", () => {
+  const request = getFaviconRequestUrl("https://example.com/private/path?token=abc#frag");
+  const sent = new URL(request).searchParams.get("domain_url");
+  assert.equal(sent, "https://example.com");
+  assert.ok(!request.includes("private") && !request.includes("token") && !request.includes("frag"));
+});
+
+test("favicon request is skipped for local files and invalid URLs", () => {
+  assert.equal(getFaviconRequestUrl("file:///C:/Users/x/a.html"), null);
+  assert.equal(getFaviconRequestUrl("not a url"), null);
+  assert.equal(getFaviconRequestUrl("javascript:alert(1)"), null);
 });

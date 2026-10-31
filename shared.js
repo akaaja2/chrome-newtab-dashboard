@@ -374,3 +374,21 @@ export function parseBackup(text) {
 
   return data;
 }
+
+// The only third-party request the extension makes: a site icon from Google's favicon service.
+// Only the origin (scheme and host) is sent, never the path, query or fragment of a saved link.
+export function getFaviconRequestUrl(url) {
+  let parsed;
+
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return null;
+  }
+
+  return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(parsed.origin)}&sz=64`;
+}
