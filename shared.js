@@ -3,7 +3,6 @@ export const STORAGE_KEYS = {
   dashboards: "dashboard.dashboards",
   tasks: "dashboard.tasks",
   note: "dashboard.note",
-  dailyEarnings: "dashboard.dailyEarnings",
   background: "dashboard.background",
   cardSurface: "dashboard.cardSurface",
   pomodoro: "dashboard.pomodoro",
@@ -67,7 +66,6 @@ export const DASHBOARD_CARD_ORDER = [
   "quotes-card",
   "links-card",
   "dashboards-card",
-  "earnings-card",
   "todo-card",
   "notes-card",
   "background-card",
@@ -81,7 +79,7 @@ export const storageArea =
 
 if (!storageArea) {
   console.warn(
-    "New Tab Dashboard: chrome.storage.local is not available. Saved links, dashboards, earnings, tasks, notes, backgrounds, layout, and Pomodoro state will not persist after reload.",
+    "New Tab Dashboard: chrome.storage.local is not available. Saved links, dashboards, tasks, notes, backgrounds, layout, and Pomodoro state will not persist after reload.",
   );
 }
 

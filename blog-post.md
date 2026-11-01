@@ -39,7 +39,6 @@ One of the strongest parts of the project is persistence. Most of the user's cho
 - saved dashboards
 - tasks and task history
 - notes
-- daily earnings
 - background selection
 - card surface preference
 - Pomodoro session state
@@ -69,9 +68,9 @@ The quote card rotates through a small set of short motivational messages automa
 
 The links card supports adding, editing, and deleting saved links. Each saved item opens in a new tab, and the card tries to display a favicon for normal web links. It also supports local file links, which is a thoughtful detail for users who keep PDFs, notes, or local files in a workflow folder.
 
-### Local dashboards, earnings, tasks, and notes
+### Local dashboards, tasks, and notes
 
-The dashboards card is designed for local HTML dashboards. It can extract a page title from a local HTML file when possible, and if not, it falls back to the file name. The earnings card tracks small jobs or platform income with GBP totals and USD conversion. The to-do list supports priorities, subtasks, and completion state, and the notes card autosaves after a short pause in typing so quick reminders are never lost.
+The dashboards card is designed for local HTML dashboards. It can extract a page title from a local HTML file when possible, and if not, it falls back to the file name. The to-do list supports priorities, subtasks, and completion state, and the notes card autosaves after a short pause in typing so quick reminders are never lost.
 
 ## Step 5: Make the page feel personal
 
@@ -88,7 +87,6 @@ Right now, the dashboard already covers the essentials for a productive new tab 
 - time and date at a glance
 - focus sessions with Pomodoro tracking
 - saved links and local dashboard shortcuts
-- daily earnings tracking
 - a priority-based to-do list
 - autosaving quick notes
 - background and card surface customisation

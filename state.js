@@ -13,7 +13,6 @@ export const state = {
     pomodoroTickIntervalId: null,
     quotesListenersBound: false,
     dashboardLayoutListenersBound: false,
-    dailyEarningsListenersBound: false,
   },
   links: {
     items: [],
@@ -22,9 +21,6 @@ export const state = {
   dashboards: {
     items: [],
     editingId: null,
-  },
-  dailyEarnings: {
-    entries: [],
   },
   tasks: {
     items: [],

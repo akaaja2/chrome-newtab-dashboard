@@ -10,7 +10,7 @@ The models need the code in the chat. From the project folder in PowerShell:
 
 ```powershell
 cd C:\Users\alexj\Projects\Claude\chrome-newtab-dashboard
-$files = 'manifest.json','newtab.html','bootstrap.js','shared.js','state.js','dom.js','sync.js','links.js','dashboards.js','tasks.js','notes.js','pomodoro.js','settings.js','backgrounds.js','card-surface.js','layout.js','clock.js','quotes.js','daily-earnings.js','PRIVACY.md','INSTALL.md','docs/WEBSTORE.md'
+$files = 'manifest.json','newtab.html','bootstrap.js','shared.js','state.js','dom.js','sync.js','links.js','dashboards.js','tasks.js','notes.js','pomodoro.js','settings.js','backgrounds.js','card-surface.js','layout.js','clock.js','quotes.js','PRIVACY.md','INSTALL.md','docs/WEBSTORE.md'
 $files | ForEach-Object { "`n===== FILE: $_ =====`n" + (Get-Content $_ -Raw) } | Set-Content "$env:TEMP\review-bundle.txt" -Encoding utf8
 (Get-Item "$env:TEMP\review-bundle.txt").Length
 ```
@@ -113,7 +113,7 @@ INPUTS
 TASK
 1. Verify each claim in the "Checks that passed" table against the code. Mark each: CONFIRMED / WRONG / OVERSTATED / CANNOT VERIFY, with the exact code you used.
 2. Try to disprove each of the five findings. Is the severity right? Is the proposed fix correct and sufficient? Could the fix introduce a new problem?
-3. Look for what the audit missed. Pay special attention to: drag-and-drop data (tasks dragged onto the timer, getTaskFromDragData), the "daily earnings" module and its inputs, quote and subtask link rendering, file:// handling, custom background upload, any use of postMessage, clipboard, downloads (the backup export link), and anything that reads from storage and writes it back unvalidated.
+3. Look for what the audit missed. Pay special attention to: drag-and-drop data (tasks dragged onto the timer, getTaskFromDragData), quote and subtask link rendering, file:// handling, custom background upload, any use of postMessage, clipboard, downloads (the backup export link), and anything that reads from storage and writes it back unvalidated.
 4. Check the audit's honesty: does it claim more coverage than the stated method supports? List every sentence that overreaches.
 5. Judge the overall verdict: would you sign off on publishing this extension publicly on GitHub and distributing the ZIP from a personal website? What would you require first?
 

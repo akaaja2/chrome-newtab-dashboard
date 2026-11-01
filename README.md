@@ -19,7 +19,6 @@ A calm, private replacement for Chrome's new tab page: tasks, notes, a Pomodoro 
 | **Pomodoro** | Work and break modes with a log of completed sessions. |
 | **Links** | Favourite links, including local `file:///` links, with add, edit and delete. |
 | **Dashboards** | Launcher cards for local HTML files. |
-| **Daily earnings** | GBP totals with USD conversion, plus quick-launch tabs for UserTesting and Prolific. |
 | **Layout** | Drag to reorder, minimise or pin cards. Patterned or opaque card surfaces. |
 | **Backgrounds** | Built-in geometric presets or your own image (up to about 1.5 MB). |
 | **Backup** | Export and import everything as JSON. |
@@ -50,7 +49,7 @@ More detail: [INSTALL.md](INSTALL.md).
 
 ## Privacy
 
-- Tasks, notes, links, earnings, settings, layout and uploaded backgrounds are stored only in `chrome.storage.local`. There is no server and no sync service.
+- Tasks, notes, links, settings, layout and uploaded backgrounds are stored only in `chrome.storage.local`. There is no server and no sync service.
 - No analytics, no tracking, no remote code.
 - **No third-party requests:** saved links show a letter tile, not a site icon, so no saved address ever leaves your browser. See [PRIVACY.md](PRIVACY.md) and the [security audit](docs/SECURITY-AUDIT.md).
 

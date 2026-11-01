@@ -4,7 +4,7 @@ _Last updated: 21 October 2026 (v1.0.0)_
 
 New Tab Dashboard does not collect, sell or share personal data. It has no account, analytics or tracking, and the developer receives none of your data.
 
-**What is stored.** Your tasks, notes, links, earnings entries, settings, layout and any background image you upload are saved only in your browser using `chrome.storage.local`. The extension has no data-sync service. Removing the extension deletes them. Backups you export are files you save yourself, so keep them private.
+**What is stored.** Your tasks, notes, links, settings, layout and any background image you upload are saved only in your browser using `chrome.storage.local`. The extension has no data-sync service. Removing the extension deletes them. Backups you export are files you save yourself, so keep them private.
 
 **Permissions.** The extension requests only `storage`, to save the data above. It does not read your browsing history or the pages you visit.
 

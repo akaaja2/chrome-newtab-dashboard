@@ -29,7 +29,6 @@ Setup: extract `dist/new-tab-dashboard-<version>.zip`, open `chrome://extensions
 ## Features
 - [ ] Pomodoro start/pause/reset; drag a task onto the timer to label a session
 - [ ] Links: add a web URL and a local path; both open in a new tab (local needs "Allow access to file URLs")
-- [ ] Earnings: add an entry, totals update
 - [ ] Custom background under 1.5 MB works; a larger one is rejected with a message
 - [ ] **Support it on Ko-fi** link in the Settings card opens ko-fi.com/claudeusage in a new tab
 

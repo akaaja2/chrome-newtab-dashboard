@@ -6,7 +6,7 @@ Date: 21 October 2026. Reviewer: Claude (AI-assisted static review). This is a s
 
 Reviewed: `manifest.json`, `newtab.html` (searched, not read line by line), `shared.js`, `links.js`, `dashboards.js`, `tasks.js`, `pomodoro.js`, `backgrounds.js`, `settings.js` (searched) and the packaged ZIP. Method: repository-wide search for network calls, dynamic code, `innerHTML` and storage use; a read of every `innerHTML` site, URL handling and backup import; secret scan of the working tree and git history; `npm test` (31 of 31 passed); confirmation that the ZIP holds 26 runtime files with `manifest.json` at the root.
 
-Not done: browser testing, dynamic analysis, a line-by-line read of `layout.js`, `daily-earnings.js`, `pomodoro.js` logic or `styles.css`, and any review of the Chrome profile or hosting.
+Not done: browser testing, dynamic analysis, a line-by-line read of `layout.js`, `pomodoro.js` logic or `styles.css`, and any review of the Chrome profile or hosting.
 
 ## Summary
 
