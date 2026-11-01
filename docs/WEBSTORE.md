@@ -1,6 +1,6 @@
 # Chrome Web Store checklist (separate from install steps)
 
-Not required for sideloading. Needed only to publish publicly.
+Not required for sideloading. Needed only to publish publicly. Ready-to-paste copy and answers for every form field: `docs/WEBSTORE-LISTING.md`.
 
 ## Account
 - [ ] Chrome Web Store developer account (one-time registration fee, currently US$5 - confirm on the dashboard)
@@ -8,31 +8,25 @@ Not required for sideloading. Needed only to publish publicly.
 - [ ] Decide publisher identity (individual vs group publisher)
 
 ## Package
-- [ ] `npm test` green, `npm run package` succeeds
+- [x] `npm test` green, `npm run package` succeeds
 - [ ] Upload `dist/new-tab-dashboard-<version>.zip` (manifest.json at root)
 - [ ] Bump `version` in `manifest.json` for every re-upload
 
 ## Listing
-- [ ] **Icons**: 128x128 store icon, plus 16, 48, 128 in the manifest `icons` field (none exist yet)
-- [ ] Title and short description (<= 132 characters), keyword-led
-- [ ] Detailed description: features, local storage only (no third-party requests), how to enable file access
-- [ ] 3-5 screenshots at 1280x800 using **dummy data only** (never real notes or links)
-- [ ] Required small promo tile (440x280)
-- [ ] Category: Productivity
+- [x] **Icons**: 128x128 store icon, plus 16, 48, 128 in the manifest `icons` field (done: `assets/icons/`, store icon in `store/`)
+- [x] Title and short description (<= 132 characters), keyword-led
+- [x] Detailed description: features, "all data stays in your browser", how to enable file access
+- [x] 3-5 screenshots at 1280x800 using **dummy data only** (never real notes or links)
+- [ ] Optional small promo tile (440x280)
+- [x] Category: Productivity
 
 ## Privacy tab
-- [ ] Single purpose statement: "Replaces the new tab page with a personal productivity dashboard."
-- [ ] Permission justification: `storage` - saves the user's tasks, notes and settings locally
-- [ ] Data usage: no data collected (favicon lookup removed in 1.0.0, so nothing is transmitted); tick none of the data categories and certify all three statements
-- [ ] Privacy policy URL: host `PRIVACY.md` on a public page (needs owner's URL)
-- [ ] Support email or site URL (needs owner's contact)
+- [x] Single purpose statement: "Replaces the new tab page with a personal productivity dashboard."
+- [x] Permission justification: `storage` - saves the user's tasks, notes and settings locally
+- [ ] Data usage: no data collected (favicon lookup removed, so nothing is transmitted); tick none of the data categories and certify all three statements
+- [x] Privacy policy URL: host `PRIVACY.md` on a public page (https://alexash.work/new-tab-dashboard-privacy.html)
+- [x] Support email or site URL (https://alexash.work/#contact)
 
 ## Submit
 - [ ] Submit for review; new-tab overrides can take longer to review
 - [ ] Track status on the Linear issue; reply to reviewer questions there
-
-## Official references
-- https://developer.chrome.com/docs/webstore/publish/
-- https://developer.chrome.com/docs/webstore/images
-- https://developer.chrome.com/docs/extensions/develop/ui/configure-icons
-

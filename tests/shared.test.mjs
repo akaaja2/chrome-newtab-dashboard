@@ -84,3 +84,4 @@ test("parseBackup rejects invalid files", () => {
     /does not contain any dashboard data/,
   );
 });
+
