@@ -15,9 +15,11 @@ const {
   formatDuration,
   getFileNameFromUrlOrPath,
   getTodayKey,
+  normalizeLocalDashboardUrl,
   normalizeUrl,
   parseBackup,
   stripFileExtension,
+  stripWrappingQuotes,
 } = shared;
 
 test("normalizeUrl adds https to bare domains", () => {
@@ -37,6 +39,94 @@ test("normalizeUrl rejects empty and non-web schemes", () => {
   assert.equal(normalizeUrl(""), null);
   assert.equal(normalizeUrl("   "), null);
   assert.equal(normalizeUrl("javascript:alert(1)"), null);
+});
+
+test("stripWrappingQuotes removes straight and smart quotes around a value", () => {
+  assert.equal(stripWrappingQuotes(`  "C:\\a b.html"  `), "C:\\a b.html");
+  assert.equal(stripWrappingQuotes(`'x.html'`), "x.html");
+  assert.equal(stripWrappingQuotes("\u201Cx.html\u201D"), "x.html");
+  assert.equal(stripWrappingQuotes("\u2018x.html\u2019"), "x.html");
+  assert.equal(stripWrappingQuotes(`" 'x.html' "`), "x.html");
+  assert.equal(stripWrappingQuotes(`it's.html`), "it's.html");
+  assert.equal(stripWrappingQuotes(`"`), `"`);
+  assert.equal(stripWrappingQuotes(undefined), "");
+});
+
+test("normalizeLocalDashboardUrl accepts the exact Explorer 'Copy as path' string from the bug", () => {
+  assert.equal(
+    normalizeLocalDashboardUrl(String.raw`"C:\Users\alexj\Downloads\SJT Next Three.html"`),
+    "file:///C:/Users/alexj/Downloads/SJT%20Next%20Three.html",
+  );
+});
+
+test("normalizeLocalDashboardUrl strips quotes and surrounding whitespace", () => {
+  const expected = "file:///C:/Users/me/My%20Dash.html";
+  for (const input of [
+    String.raw`  "C:\Users\me\My Dash.html"  `,
+    String.raw`'C:\Users\me\My Dash.html'`,
+    "\u201CC:\\Users\\me\\My Dash.html\u201D",
+    "\u2018C:\\Users\\me\\My Dash.html\u2019",
+    "\t\"C:\\Users\\me\\My Dash.html\"\n",
+    String.raw`C:\Users\me\My Dash.html`,
+  ]) {
+    assert.equal(normalizeLocalDashboardUrl(input), expected, JSON.stringify(input));
+  }
+});
+
+test("normalizeLocalDashboardUrl handles Windows, UNC and POSIX paths", () => {
+  assert.equal(
+    normalizeLocalDashboardUrl("c:/Users/me/Reports/Q3 Board.html"),
+    "file:///C:/Users/me/Reports/Q3%20Board.html",
+  );
+  assert.equal(
+    normalizeLocalDashboardUrl(String.raw`\\server\share\x.html`),
+    "file://server/share/x.html",
+  );
+  assert.equal(
+    normalizeLocalDashboardUrl(String.raw`"\\server\share\Team Dash.html"`),
+    "file://server/share/Team%20Dash.html",
+  );
+  assert.equal(
+    normalizeLocalDashboardUrl("/home/me/My Dash.html"),
+    "file:///home/me/My%20Dash.html",
+  );
+  assert.equal(
+    normalizeLocalDashboardUrl(`"/Users/me/Dash #1.html"`),
+    "file:///Users/me/Dash%20%231.html",
+  );
+});
+
+test("normalizeLocalDashboardUrl keeps file:/// URLs valid and strips their quotes", () => {
+  assert.equal(normalizeLocalDashboardUrl("file:///C:/x/y.html"), "file:///C:/x/y.html");
+  assert.equal(
+    normalizeLocalDashboardUrl(`"file:///C:/x/My%20Dash.html"`),
+    "file:///C:/x/My%20Dash.html",
+  );
+  assert.equal(
+    normalizeLocalDashboardUrl("\u201Cfile:///C:/x/My Dash.html\u201D"),
+    "file:///C:/x/My%20Dash.html",
+  );
+});
+
+test("normalizeLocalDashboardUrl accepts .htm and any extension case", () => {
+  assert.equal(normalizeLocalDashboardUrl(String.raw`"C:\a\b.htm"`), "file:///C:/a/b.htm");
+  assert.equal(normalizeLocalDashboardUrl(String.raw`C:\a\B.HTML`), "file:///C:/a/B.HTML");
+  assert.equal(normalizeLocalDashboardUrl("/a/b.HtM"), "file:///a/b.HtM");
+});
+
+test("normalizeLocalDashboardUrl still rejects empty and non-file input", () => {
+  for (const input of ["", "   ", `""`, `" "`, "\u201C\u201D", "https://example.com/x.html",
+    `"https://example.com/x.html"`, "example.com", "javascript:alert(1)", "//server/x.html"]) {
+    assert.equal(normalizeLocalDashboardUrl(input), null, JSON.stringify(input));
+  }
+});
+
+test("normalizeUrl strips wrapping quotes for links too", () => {
+  assert.equal(
+    normalizeUrl(String.raw`"C:\Users\me\My Docs\report.pdf"`),
+    "file:///C:/Users/me/My%20Docs/report.pdf",
+  );
+  assert.equal(normalizeUrl(`"https://a.b/c"`), "https://a.b/c");
 });
 
 test("escapeHtml escapes markup characters", () => {

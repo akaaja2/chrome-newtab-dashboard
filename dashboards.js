@@ -3,7 +3,7 @@ import {
   createId,
   formatDisplayUrl,
   getFileNameFromUrlOrPath,
-  normalizeUrl,
+  normalizeLocalDashboardUrl,
   openUrlInNewTab,
   readStoredValue,
   setStatus,
@@ -53,22 +53,6 @@ function startEditingDashboard(dashboard) {
 
   setDashboardMessage("Editing dashboard. Update the fields and save your changes.");
   dom.dashboardTitleInput.focus();
-}
-
-function normalizeLocalDashboardUrl(inputValue) {
-  const normalizedUrl = normalizeUrl(inputValue);
-
-  if (!normalizedUrl) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(normalizedUrl);
-
-    return parsed.protocol === "file:" ? parsed.href : null;
-  } catch {
-    return null;
-  }
 }
 
 function getFallbackDashboardTitle(url) {
